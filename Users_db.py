@@ -1,35 +1,61 @@
-# Users_db.py
-import os, sqlite3
+import os
+import sqlite3
 from contextlib import closing
+from argon2 import PasswordHasher
+from argon2.exceptions import VerifyMismatchError
 
 DB_PATH = os.path.join(os.path.dirname(__file__), "Users.db")
+ph = PasswordHasher()
 
-def ensure_db():
-    with closing(sqlite3.connect(DB_PATH)) as con, con:
+def ensure_db() -> None:
+    with closing(sqlite3.connect(DB_PATH)) as con:
         con.execute("""
             CREATE TABLE IF NOT EXISTS Users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 login TEXT NOT NULL UNIQUE,
+                password_hash TEXT NOT NULL,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )
         """)
+        con.commit()
 
-def add_user(login: str):
+def add_user(login: str, password: str) -> bool:
     ensure_db()
     login = (login or "").strip()
-    if not login:
-        print("SKIP empty login")
-        return
-    with closing(sqlite3.connect(DB_PATH)) as con:
-        cur = con.execute("SELECT COUNT(*) FROM Users WHERE login = ?", (login,))
-        cnt = cur.fetchone()[0]
-        print("BEFORE:", os.path.abspath(DB_PATH), "| login =", repr(login), "| exists =", cnt)
+    password = (password or "").strip()
+    if not login or not password:
+        return False
 
+    pw_hash = ph.hash(password)
+
+    with closing(sqlite3.connect(DB_PATH)) as con:
         try:
-            con.execute("INSERT INTO Users(login) VALUES (?)", (login,))
+            con.execute(
+                "INSERT INTO Users (login, password_hash) VALUES (?, ?)",
+                (login, pw_hash)
+            )
             con.commit()
-            print("INSERTED OK")
-        except sqlite3.IntegrityError as e:
-            print("INTEGRITY ERROR:", e)  # <- увидим точную причину
-            # con.execute("INSERT OR IGNORE INTO Users(login) VALUES (?)", (login,))
-            # con.commit()
+            return True
+        except sqlite3.IntegrityError:
+            return False
+
+def check_user(login: str, password: str) -> bool:
+    ensure_db()
+    login = (login or "").strip()
+    password = (password or "").strip()
+    if not login or not password:
+        return False
+
+    with closing(sqlite3.connect(DB_PATH)) as con:
+        row = con.execute(
+            "SELECT password_hash FROM Users WHERE login = ?",
+            (login,)
+        ).fetchone()
+
+    if not row:
+        return False
+
+    try:
+        return ph.verify(row[0], password)
+    except VerifyMismatchError:
+        return False
