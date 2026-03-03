@@ -1,4 +1,4 @@
-from secondpagec import SecondPageGUI
+from mainpage import SecondPageGUI
 
 
 import tkinter as tk

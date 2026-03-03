@@ -45,9 +45,6 @@ class videos_2025:
     ("8 task", "https://youtu.be/ubGOE0Sf8oA"),
    ]
 
-
-
-
    VIDEOS_4_POINTS = [
     ("1 task", "https://example.com/4p-1"),
     ("2 task", "https://example.com/4p-2"),
@@ -56,3 +53,4 @@ class videos_2025:
    VIDEOS_3_POINTS = [
     ("1 task", "https://example.com/3p-1"),
     ]
+

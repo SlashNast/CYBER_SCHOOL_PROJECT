@@ -1,6 +1,6 @@
 #ai_client
 from openai import OpenAI
-from config import DEEPSEEK_API_KEY
+from ai_config import DEEPSEEK_API_KEY
 import threading
 
 client = OpenAI(api_key=DEEPSEEK_API_KEY, base_url="https://api.deepseek.com")

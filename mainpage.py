@@ -1,6 +1,7 @@
-from sampleforbagrutmath import ThirdPageGUI
+from sampleforbagrutmath import VideoGridPage
 from aichat_pageGUI import AIChatPage
 import tkinter as tk
+
 
 
 class SecondPageGUI:
@@ -126,7 +127,8 @@ class SecondPageGUI:
             highlightbackground=self.BTN_BORDER,
             highlightcolor=self.BTN_BORDER,
             command=command,
-            cursor="hand2"
+            cursor="hand2",
+            width = 25
         )
         btn.bind("<Enter>", lambda e: e.widget.config(bg=self.BTN_HOVER))
         btn.bind("<Leave>", lambda e: e.widget.config(bg=self.BTN_BG))
@@ -195,11 +197,11 @@ class SecondPageGUI:
         base_x = self.panel_x1 + 140
         base_y = self.panel_y1 + 200
 
-        self._make_sub_button("5 POINTS", base_x, base_y, command=self.open_math_5points_page)
-        self._make_sub_button("4 POINTS", base_x, base_y + 55)
-        self._make_sub_button("3 POINTS", base_x, base_y + 110)
+        self._make_sub_button("BAGRUTS PDFS", base_x, base_y, command=self.bagrutpdfs)
+        self._make_sub_button("VIDEO SOLUTIONS", base_x, base_y + 55)
+        self._make_sub_button("idk smthng", base_x, base_y + 110)
 
-    def open_math_5points_page(self):
+    def bagrutpdfs(self):
         if self._math_5points_window is not None:
             try:
                 self._math_5points_window._this_wnd.lift()
@@ -207,7 +209,7 @@ class SecondPageGUI:
             except:
                 self._math_5points_window = None
 
-        self._math_5points_window = ThirdPageGUI(self._this_wnd)
+        self._math_5points_window = VideoGridPage(self._this_wnd)
         self._math_5points_window.create_ui()
 
 

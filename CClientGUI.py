@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import *
 
 from PIL.ImageFont import truetype
+from mainpage import  SecondPageGUI
 
 from CClientBL import *
 from CLoginGUI import *
