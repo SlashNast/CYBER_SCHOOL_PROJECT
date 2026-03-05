@@ -11,6 +11,11 @@ class videos_2025:
     ("8 task", "https://youtu.be/-k3BcZaUMm0"),
    ]
 
+   VIDEOMATH ={
+       "1 task" :  "https://youtu.be/0XczPenRWOk"
+
+   }
+
    VIDEOS_5_POINTS_571_SUMMER_MOEDBET_2025 = [
        ("1 task", "https://youtu.be/Uhq2y3qg4Hk"),
        ("2 task", "https://youtu.be/PuOxndoKk6M"),

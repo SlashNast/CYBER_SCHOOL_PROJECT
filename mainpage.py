@@ -1,14 +1,17 @@
 from sampleforbagrutmath import VideoGridPage
+from BagrutMathPDF import Mathpdfs
 from aichat_pageGUI import AIChatPage
 import tkinter as tk
 
 
 
 class SecondPageGUI:
-    def __init__(self, parent_wnd):
+    def __init__(self, parent_wnd, username):
         self._parent_wnd = parent_wnd
         self._this_wnd = tk.Toplevel(parent_wnd) if parent_wnd else tk.Tk()
-        self._this_wnd.title("Choose learning program")
+        self.username = username
+        self._this_wnd.title(f"Hi, {self.username} 👋 !! pls  Choose learning program")
+
 
         self._canvas = None
         self._math_5points_window = None
@@ -77,10 +80,12 @@ class SecondPageGUI:
             font=("Calibri", 26, "bold"),
             fill=self.TEXT
         )
+
+
         self._canvas.create_text(
-            (self.panel_x1 + self.panel_x2) // 2, self.panel_y1 + 70,
-            text="choose your learning program",
-            font=("Calibri", 14),
+            (self.panel_x1 + self.panel_x2) // 2, self.panel_y1 + 80,
+            text=f"Hi!! {self.username} choose your learning program",
+            font=("Calibri", 15),
             fill=self.MUTED
         )
 
@@ -93,7 +98,7 @@ class SecondPageGUI:
         start_x = (self.panel_x1 + self.panel_x2 - total_w) // 2
 
         self._btn_CHATAI = self._make_button("AI chat",  command=self.open_chat_AI_page)
-        self._btn_CHATAI.place(x=(self.panel_x1 + self.panel_x2) // 2 - 110, y=btn_y+200, width=btn_w, height=btn_h)
+        self._btn_CHATAI.place(x= start_x + 2*(btn_w + gap), y=btn_y, width=btn_w, height=btn_h)
 
         self._btn_bagrut = self._make_button("BAGRUT PREP", lambda: self.on_choose("bagrut"))
         self._btn_bagrut.place(x=start_x, y=btn_y, width=btn_w, height=btn_h)
@@ -101,8 +106,7 @@ class SecondPageGUI:
         self._btn_school = self._make_button("SCHOOL HELP", lambda: self.on_choose("school"))
         self._btn_school.place(x=start_x + btn_w + gap, y=btn_y, width=btn_w, height=btn_h)
 
-        self._btn_selfed = self._make_button("SELF-EDUCATION", lambda: self.on_choose("selfed"))
-        self._btn_selfed.place(x=start_x + (btn_w + gap) * 2, y=btn_y, width=btn_w, height=btn_h)
+
 
         # footer
         self._canvas.create_text(
@@ -149,9 +153,7 @@ class SecondPageGUI:
 
     # ================= Logic =================
     def on_choose(self, program_type: str):
-        if program_type == "selfed":
-            self.show_selfed_options()
-        elif program_type == "school":
+        if program_type == "school":
             self.show_school_options()
         elif program_type == "bagrut":
             self.show_bagrut_options()
@@ -161,15 +163,7 @@ class SecondPageGUI:
             self.show_bagrut_math_options()
 
     # ================= Submenus =================
-    def show_selfed_options(self):
-        self._clear_sub_buttons()
 
-        base_x = self.panel_x2 - 310  # справа (под self-education)
-        base_y = self.panel_y1 + 200
-
-        self._make_sub_button("MATH", base_x, base_y)
-        self._make_sub_button("PSYCHOLOGY", base_x, base_y + 55)
-        self._make_sub_button("PROGRAMMING", base_x, base_y + 110)
 
     def show_school_options(self):
         self._clear_sub_buttons()
@@ -209,7 +203,7 @@ class SecondPageGUI:
             except:
                 self._math_5points_window = None
 
-        self._math_5points_window = VideoGridPage(self._this_wnd)
+        self._math_5points_window = Mathpdfs(self._this_wnd)
         self._math_5points_window.create_ui()
 
 

@@ -14,45 +14,7 @@ class Mathpdfs:
         self._canvas = None
         self._sub_buttons = []
 
-        self.create_ui()
 
-        self.scroll_canvas = tk.Canvas(
-            self._canvas,
-            bg=self.PANEL,
-            highlightthickness=0,
-            bd=0
-        )
-
-        self.scrollbar = tk.Scrollbar(
-            self._this_wnd,
-            orient="vertical",
-            command=self.scroll_canvas.yview
-        )
-
-        self.scroll_canvas.configure(yscrollcommand=self.scrollbar.set)
-
-        list_x1 = self.panel_x1 + 40
-        list_y1 = self.panel_y1 + 110
-        list_x2 = self.panel_x2 - 40
-        list_y2 = self.panel_y2 - 60
-
-        list_w = list_x2 - list_x1
-        list_h = list_y2 - list_y1
-
-        # размещаем scroll_canvas поверх твоего большого canvas
-        self.scroll_canvas.place(x=list_x1, y=list_y1, width=list_w, height=list_h)
-        self.scrollbar.place(x=list_x2 + 8, y=list_y1, height=list_h)
-
-        # frame внутри canvas — сюда будем добавлять кнопки
-        self.list_frame = tk.Frame(self.scroll_canvas, bg=self.PANEL)
-        self.list_window_id = self.scroll_canvas.create_window((0, 0), window=self.list_frame, anchor="nw")
-
-        # важно: обновлять scrollregion, когда меняется размер контента
-        self.list_frame.bind("<Configure>", self._on_list_frame_configure)
-        self.scroll_canvas.bind("<Configure>", self._on_scroll_canvas_configure)
-
-        # колесо мыши (чтобы можно было листать)
-        self.scroll_canvas.bind_all("<MouseWheel>", self._on_mousewheel)
 
 
 
@@ -71,6 +33,10 @@ class Mathpdfs:
             "35571, H26" : "שאלון-35571,  horef2026 .pdf",
             "35572, H26" : "שאלון-35572, horef2026.pdf"
         }
+
+        self.create_ui()
+        self._create_scroll_area()
+        self._fill_buttons()
 
     def _get_project_root(self):
         return os.path.dirname(os.path.abspath(__file__))
@@ -155,36 +121,79 @@ class Mathpdfs:
             fill=self.MUTED
         )
 
-        #button
-        btn_y = self.panel_y1 + 120
-        btn_w, btn_h = 240, 52
-        gap = 35
-
-        total_w = btn_w * 3 + gap * 2
-        start_x = (self.panel_x1 + self.panel_x2 - total_w) // 2
-
-        self._canvas.create_text(
-            start_x+ 90, btn_y - 20,
-            text="BAGRUTS OF 2026",
-            font=("Calibri", 18, "bold"),
-            fill=self.TEXT
+        self.scroll_canvas = tk.Canvas(
+            self._canvas,
+            bg=self.PANEL,
+            highlightthickness=0,
+            bd=0
         )
 
+        self.scrollbar = tk.Scrollbar(
+            self._this_wnd,
+            orient="vertical",
+            command=self.scroll_canvas.yview
+        )
 
-        # self._btn_35571H26 = self._make_button("35571", lambda: self.on_choose("35571, H26"))
-        # self._btn_35571H26.place(x=start_x, y=btn_y, width=btn_w-15, height=btn_h)
-        #
-        # self._btn_35572H26 = self._make_button("35572", lambda: self.on_choose("35572, H26"))
-        # self._btn_35572H26.place(x=start_x, y=btn_y+70, width=btn_w-15, height=btn_h)
-        #
-        # self._btn_35581H26 = self._make_button("35581", lambda: self.on_choose("35581, H26"))
-        # self._btn_35581H26.place(x=start_x, y=btn_y + 140, width=btn_w - 15, height=btn_h)
-        #
-        # self._btn_35582H26 = self._make_button("35872", lambda: self.on_choose("35872, H26"))
-        # self._btn_35582H26.place(x=start_x, y=btn_y + 210, width=btn_w - 15, height=btn_h)
+        self.scroll_canvas.configure(yscrollcommand=self.scrollbar.set)
 
-        btn = self._make_list_button("BAGRUT PREP", lambda: self.on_choose("35472_H26"))
-        btn.pack(fill="x", padx=10, pady=8)
+        list_x1 = self.panel_x1 + 40
+        list_y1 = self.panel_y1 + 110
+        list_x2 = self.panel_x2 - 40
+        list_y2 = self.panel_y2 - 60
+
+        list_w = list_x2 - list_x1
+        list_h = list_y2 - list_y1
+
+        # размещаем scroll_canvas поверх твоего большого canvas
+        self.scroll_canvas.place(x=list_x1, y=list_y1, width=list_w, height=list_h)
+        self.scrollbar.place(x=list_x2 + 8, y=list_y1, height=list_h)
+
+        # frame внутри canvas — сюда будем добавлять кнопки
+        self.list_frame = tk.Frame(self.scroll_canvas, bg=self.PANEL)
+        self.list_window_id = self.scroll_canvas.create_window((0, 0), window=self.list_frame, anchor="nw")
+
+        # важно: обновлять scrollregion, когда меняется размер контента
+        self.list_frame.bind("<Configure>", self._on_list_frame_configure)
+        self.scroll_canvas.bind("<Configure>", self._on_scroll_canvas_configure)
+
+        # колесо мыши (чтобы можно было листать)
+        self.scroll_canvas.bind_all("<MouseWheel>", self._on_mousewheel)
+
+        btn1 = self._make_list_button("35571, winter 2026", lambda: self.on_choose("35571, H26"))
+        btn1.pack(fill="x", padx=10, pady=6)
+
+        btn2 = self._make_list_button("35572, winter 2026", lambda: self.on_choose("35572, H26"))
+        btn2.pack(fill="x", padx=10, pady=6)
+
+        btn3 = self._make_list_button("35581, winter 2026", lambda: self.on_choose("35581, H26"))
+        btn3.pack(fill="x", padx=10, pady=6)
+
+        btn4 = self._make_list_button("35582, winter 2026", lambda: self.on_choose("35582, H26"))
+        btn4.pack(fill="x", padx=10, pady=6)
+
+        btn5 = self._make_list_button("35471, winter 2026", lambda: self.on_choose("35471, H26"))
+        btn5.pack(fill="x", padx=10, pady=6)
+
+        btn6 = self._make_list_button("35472, winter 2026", lambda: self.on_choose("35472, H26"))
+        btn6.pack(fill="x", padx=10, pady=6)
+
+        btn7 = self._make_list_button("35481, winter 2026", lambda: self.on_choose("35481, H26"))
+        btn7.pack(fill="x", padx=10, pady=6)
+
+        btn8 = self._make_list_button("35482, winter 2026", lambda: self.on_choose("35482, H26"))
+        btn8.pack(fill="x", padx=10, pady=6)
+
+        btn9 = self._make_list_button("35371, winter 2026", lambda: self.on_choose("35371, H26"))
+        btn9.pack(fill="x", padx=10, pady=6)
+
+        btn10 = self._make_list_button("35372, winter 2026", lambda: self.on_choose("35372, H26"))
+        btn10.pack(fill="x", padx=10, pady=6)
+
+        btn11 = self._make_list_button("35381, winter 2026", lambda: self.on_choose("35381, H26"))
+        btn11.pack(fill="x", padx=10, pady=6)
+
+        btn12 = self._make_list_button("35382, winter 2026", lambda: self.on_choose("35382, H26"))
+        btn12.pack(fill="x", padx=10, pady=6)
 
 
 
@@ -196,27 +205,7 @@ class Mathpdfs:
             fill="#7e8593"
         )
 
-    # def _make_button(self, text, command):
-    #     btn = tk.Button(
-    #         self._canvas,
-    #         text=text,
-    #         font=("Calibri", 14, "bold"),
-    #         fg=self.BTN_TEXT,
-    #         bg=self.BTN_BG,
-    #         activeforeground=self.BTN_TEXT,
-    #         activebackground=self.BTN_HOVER,
-    #         bd=1,
-    #         relief="solid",
-    #         highlightthickness=1,
-    #         highlightbackground=self.BTN_BORDER,
-    #         highlightcolor=self.BTN_BORDER,
-    #         command=command,
-    #         cursor="hand2",
-    #         width=25
-    #     )
-    #     btn.bind("<Enter>", lambda e: e.widget.config(bg=self.BTN_HOVER))
-    #     btn.bind("<Leave>", lambda e: e.widget.config(bg=self.BTN_BG))
-    #     return btn
+
 
     def _make_list_button(self, text, command):
         btn = tk.Button(
@@ -238,6 +227,7 @@ class Mathpdfs:
         btn.bind("<Enter>", lambda e: e.widget.config(bg=self.BTN_HOVER))
         btn.bind("<Leave>", lambda e: e.widget.config(bg=self.BTN_BG))
         return btn
+
 
     def _on_list_frame_configure(self, event):
             # пересчитываем область прокрутки под размер содержимого

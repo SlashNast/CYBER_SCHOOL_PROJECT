@@ -38,6 +38,8 @@ class CClientGUI(CClientBL):
         self._btn_send = None
         self._btn_login = None
 
+        self._login_wnd = None
+
         self.create_ui()
 
     def create_ui(self):
@@ -155,70 +157,72 @@ class CClientGUI(CClientBL):
 
     def on_click_login(self):
 
-       # def callback_register(data: json):
-           # write_to_log(f"[Client GUI] Register - Received data from Login Wnd : {data}")
+        loc_wnd = None
 
-        #def callback_signin(data: json):
-            #write_to_log(f"[Client GUI] SignIn - Received data from Login Wnd : {data}")
+        def callback_register(data: dict):
+            if self._client_socket is None:
+                self._client_socket = self.connect()
+                if not self._client_socket:
+                    messagebox.showerror("Error", "Can't connect to server")
+                    return
 
-       def callback_register(data: dict):
-           # 1) connect если надо
-           if self._client_socket is None:
-               self._client_socket = self.connect()
-               if not self._client_socket:
-                   messagebox.showerror("Error", "Can't connect to server")
-                   return
+            self.send_data("REG", json.dumps(data))
+            resp = self.receive_data()
 
-           # 2) send REG + json
-           self.send_data("REG", json.dumps(data))
-           resp = self.receive_data()
+            try:
+                obj = json.loads(resp)
+            except:
+                messagebox.showerror("Error", resp)
+                return
 
-           # 3) показать результат
-           try:
-               obj = json.loads(resp)
-               if obj.get("success"):
-                   messagebox.showinfo("OK", obj.get("msg", "Registered"))
-                   loc_wnd._this_wnd.destroy()  # закрыть окно логина
-                   SecondPageGUI(self._root)
+            if obj.get("success"):
+                messagebox.showinfo("OK", obj.get("msg", "Registered"))
 
-                   # открыть SecondPageGUI тут
-               else:
-                   messagebox.showerror("Error", obj.get("error", "Registration failed"))
-           except:
-               messagebox.showerror("Error", resp)
+                username = data.get("login", "").strip()
 
+                loc_wnd._this_wnd.destroy()
+                SecondPageGUI(self._root, username)
 
+            else:
+                messagebox.showerror("Error", obj.get("error", "Registration failed"))
 
-       def callback_signin(data: dict):
-           if self._client_socket is None:
-               self._client_socket = self.connect()
-               if not self._client_socket:
-                   messagebox.showerror("Error", "Can't connect to server")
-                   return
+        def callback_signin(data: dict):
 
-           self.send_data("SIGNIN", json.dumps(data))
-           resp = self.receive_data()
+            if self._client_socket is None:
+                self._client_socket = self.connect()
+                if not self._client_socket:
+                    messagebox.showerror("Error", "Can't connect to server")
+                    return
 
-           try:
-               obj = json.loads(resp)
-               if obj.get("success"):
-                   messagebox.showinfo("OK", obj.get("msg", "Signed in"))
-                   loc_wnd._this_wnd.destroy()  # закрыть окно логина
-                   SecondPageGUI(self._root)
-                   # открыть SecondPageGUI тут
-               else:
-                   messagebox.showerror("Error", obj.get("error", "Sign in failed"))
-           except:
-               messagebox.showerror("Error", resp)
+            self.send_data("SIGNIN", json.dumps(data))
+            resp = self.receive_data()
 
+            try:
+                obj = json.loads(resp)
+            except:
+                messagebox.showerror("Error", resp)
+                return
 
-       loc_wnd = CLoginGUI(self._root, callback_register, callback_signin)
-       loc_wnd.run()
+            if obj.get("success"):
+                messagebox.showinfo("OK", obj.get("msg", "Signed in"))
+
+                username = data.get("login", "").strip()
+
+                loc_wnd._this_wnd.destroy()
+                SecondPageGUI(self._root, username)
+
+            else:
+                messagebox.showerror("Error", obj.get("error", "Sign in failed"))
+
+        loc_wnd = CLoginGUI(self._root, callback_register, callback_signin)
+        loc_wnd.run()
 
     def update_received_entry(self):
-        message = self.receive_data()
+        return
+        #message = self.receive_data()
         # self._text_Received.delete(0, tk.END)
-        self._text_Received.insert(tk.END, message + "\n")
+        #self._text_Received.insert(tk.END, message + "\n")
+
 
 
 if __name__ == "__main__":

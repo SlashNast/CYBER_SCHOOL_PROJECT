@@ -40,6 +40,8 @@ class CLoginGUI:
     def get_login(self) -> str:
         return self._login
 
+
+
     def get_pw(self) -> str:
         return self._pw
 
@@ -118,8 +120,7 @@ class CLoginGUI:
                                  fill=PURPLE,
                                  anchor="w")
 
-        # ====== Entry "frames" (делаем поля красивыми через рамку на canvas) ======
-        # Координаты полей
+
 
         entry_w = 360
         entry_h = 40
@@ -130,20 +131,8 @@ class CLoginGUI:
         self._canvas.create_rectangle(panel_x1 + 55, panel_y1 + 260, panel_x1 + 55+ entry_w, panel_y1 + 260 + entry_h,
                                       outline=PURPLE, width=2)
 
-        # Hint texts (мягкий, не слепит)
-        # self._canvas.create_text(panel_x1 + 55, panel_y1 + 125,
-        #                          text="enter your username",
-        #                          font=("Calibri", 12),
-        #                          fill=MUTED,
-        #                          anchor="w")
-        # self._canvas.create_text(panel_x1 + 55, panel_y1 + 240,
-        #                          text="enter your password",
-        #                          font=("Calibri", 12),
-        #                          fill=MUTED,
-        #                          anchor="w")
 
-        # ====== Entry widgets ======
-        # Важно: фон делаем темным, текст светлым
+
         self._entry_login = tk.Entry(
             self._canvas,
             font=("Calibri", 16),
@@ -280,7 +269,7 @@ if __name__ == "__main__":
             # ВАЖНО: add_user принимает ТОЛЬКО 1 аргумент — login
             add_user(login)
             messagebox.showinfo("OK", f"User {login} added.")
-            SecondPageGUI(main_gui._this_wnd)
+            SecondPageGUI(main_gui._this_wnd, main_gui.get_login())
         except Exception as e:
             messagebox.showerror("Ошибка добавления", str(e))
 
@@ -288,7 +277,7 @@ if __name__ == "__main__":
         global main_gui
         # здесь будет логика проверки логина/пароля — сейчас просто заглушка
         messagebox.showinfo("Sign in", f"trying enter as:  {data['login']}")
-        SecondPageGUI(main_gui._this_wnd)
+        SecondPageGUI(main_gui._this_wnd, main_gui.get_login())
 
     main_gui = CLoginGUI(None, register_cb, signin_cb)
     main_gui.run()
