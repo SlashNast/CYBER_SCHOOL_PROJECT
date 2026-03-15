@@ -1,5 +1,6 @@
 from sampleforbagrutmath import VideoGridPage
 from BagrutMathPDF import Mathpdfs
+from MathVideos import MathVideos
 from aichat_pageGUI import AIChatPage
 import tkinter as tk
 
@@ -15,6 +16,7 @@ class SecondPageGUI:
 
         self._canvas = None
         self._math_5points_window = None
+        self._math_videos_window = None
         self._AI_chat_window = None
 
         # чтобы под-опции не наслаивались
@@ -132,7 +134,7 @@ class SecondPageGUI:
             highlightcolor=self.BTN_BORDER,
             command=command,
             cursor="hand2",
-            width = 25
+            width = 27
         )
         btn.bind("<Enter>", lambda e: e.widget.config(bg=self.BTN_HOVER))
         btn.bind("<Leave>", lambda e: e.widget.config(bg=self.BTN_BG))
@@ -191,9 +193,9 @@ class SecondPageGUI:
         base_x = self.panel_x1 + 140
         base_y = self.panel_y1 + 200
 
-        self._make_sub_button("BAGRUTS PDFS", base_x, base_y, command=self.bagrutpdfs)
-        self._make_sub_button("VIDEO SOLUTIONS", base_x, base_y + 55)
-        self._make_sub_button("idk smthng", base_x, base_y + 110)
+        self._make_sub_button("BAGRUTS", base_x, base_y, command=self.bagrutpdfs)
+        self._make_sub_button("VIDEOS", base_x, base_y + 55, command = self.bagrutvideos)
+        self._make_sub_button("OTHERS", base_x, base_y + 110)
 
     def bagrutpdfs(self):
         if self._math_5points_window is not None:
@@ -205,6 +207,17 @@ class SecondPageGUI:
 
         self._math_5points_window = Mathpdfs(self._this_wnd)
         self._math_5points_window.create_ui()
+
+    def bagrutvideos(self):
+        if self._math_videos_window is not None:
+            try:
+                self._math_videos_window._this_wnd.lift()
+                return
+            except:
+                self._math_videos_window = None
+
+        self._math_videos_window = MathVideos(self._this_wnd)
+
 
 
     def open_chat_AI_page(self):
