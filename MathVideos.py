@@ -1,14 +1,20 @@
+#MathVideos.py
+
+
 import tkinter as tk
 import webbrowser
 from tkinter import messagebox
 
 from math_bagrut_videos import videos_2025
+import Users_db
 
 
 class MathVideos:
-    def __init__(self, parent_wnd):
+    def __init__(self, parent_wnd, user_id):
         self._parent_wnd = parent_wnd
+        self.user_id = user_id
         self._this_wnd = tk.Toplevel(parent_wnd) if parent_wnd else tk.Tk()
+
         self._this_wnd.title("Choose video solution")
 
         self._canvas = None
@@ -22,14 +28,21 @@ class MathVideos:
     # ================= Logic =================
 
     def on_choose(self, url: str):
-        self.open_video(url)
-
-    def open_video(self, url: str):
         if not url:
             messagebox.showerror("Error", "Video link not found")
             return
 
         webbrowser.open(url)
+
+    def on_save(self, material_id: int, title: str):
+
+        ok = Users_db.add_to_favorites(self.user_id, material_id )
+        if ok:
+            messagebox.showinfo("SAVE", f"Saved:\n{title}")
+        else:
+            messagebox.showerror("SAVE", f"This material is already in favorites")
+
+
 
     # ================= UI =================
 
@@ -64,8 +77,8 @@ class MathVideos:
         self._canvas.pack(fill="both", expand=True)
         self._canvas.bind("<Configure>", self._draw_grid)
 
-        self.panel_x1, self.panel_y1 = 520, 110
-        self.panel_x2, self.panel_y2 = 1480, 560
+        self.panel_x1, self.panel_y1 = 420, 100
+        self.panel_x2, self.panel_y2 = 1580, 620
 
         # shadow
         self._canvas.create_rectangle(
@@ -134,6 +147,7 @@ class MathVideos:
         self.scrollbar.place(x=list_x2 + 8, y=list_y1, height=list_h)
 
         self.list_frame = tk.Frame(self.scroll_canvas, bg=self.PANEL)
+
         self.list_window_id = self.scroll_canvas.create_window(
             (0, 0),
             window=self.list_frame,
@@ -145,14 +159,33 @@ class MathVideos:
 
         self.scroll_canvas.bind_all("<MouseWheel>", self._on_mousewheel)
 
+
+
+
+
         # ===== Buttons =====
 
-        for title, url in self.VIDEOS:
-            btn = self._make_list_button(
-                title,
-                lambda u=url: self.on_choose(u)
+        self.list_frame.grid_columnconfigure(0, weight=1)
+        self.list_frame.grid_columnconfigure(1, weight=0)
+
+        for row, (material_id, title, material_type, path_or_link) in enumerate(self.VIDEOS):
+
+            big_btn = self._make_list_button(title, lambda u=path_or_link: self.on_choose(u))
+
+            big_btn.grid(
+                row=row,
+                column=0,
+                padx=(10, 8),
+                pady=6
             )
-            btn.pack(fill="x", padx=10, pady=6)
+            save_btn = self._make_list_saved("SAVE", lambda m_id=material_id, t=title, u=path_or_link: self.on_save(m_id, t))
+
+            save_btn.grid(
+                row=row,
+                column=1,
+                padx=(0, 10),
+                pady=6
+            )
 
         # footer
         self._canvas.create_text(
@@ -180,13 +213,45 @@ class MathVideos:
             highlightbackground=self.BTN_BORDER,
             highlightcolor=self.BTN_BORDER,
             command=command,
-            cursor="hand2"
+            cursor="hand2",
+            anchor="w",
+            padx=12,
+            width = 55
         )
 
         btn.bind("<Enter>", lambda e: e.widget.config(bg=self.BTN_HOVER))
         btn.bind("<Leave>", lambda e: e.widget.config(bg=self.BTN_BG))
 
         return btn
+
+
+    def _make_list_saved(self, text, command):
+        btn = tk.Button(
+            self.list_frame,
+            text=text,
+            font=("Calibri", 14, "bold"),
+            fg=self.BTN_TEXT,
+            bg=self.BTN_BG,
+            activeforeground=self.BTN_TEXT,
+            activebackground=self.BTN_HOVER,
+            bd=1,
+            relief="solid",
+            highlightthickness=1,
+            highlightbackground=self.BTN_BORDER,
+            highlightcolor=self.BTN_BORDER,
+            command=command,
+            cursor="hand2",
+            width=8
+        )
+
+        btn.bind("<Enter>", lambda e: e.widget.config(bg=self.BTN_HOVER))
+        btn.bind("<Leave>", lambda e: e.widget.config(bg=self.BTN_BG))
+
+        return btn
+
+
+
+
 
     # ================= Scroll =================
 
@@ -247,5 +312,19 @@ class MathVideos:
 
 
 if __name__ == "__main__":
-    gui = MathVideos(None)
+    from Users_db import add_to_favorites
+
+    def add_saved(data1, data2):
+        user_id =  data1["user_id"].strip()
+        material = data2["material"].strip()
+
+        try:
+            add_to_favorites(user_id, material)
+            messagebox.showinfo("OK", f"Your {material} added.")
+
+        except Exception as e:
+            messagebox.showerror("Ошибка добавления", str(e))
+
+
+    gui = MathVideos(None,1)
     gui.run()

@@ -1,14 +1,14 @@
-# video_configs.py
+# math_bagrut_videos.py
 class videos_2025:
    VIDEOS_5_POINTS_571_SUMMER_MOEDALEF_2025 = [
-    ("1 task", "https://youtu.be/0XczPenRWOk"),
-    ("2 task", "https://youtu.be/qca6bfIqrFk"),
-    ("3 task", "https://youtu.be/jdb4Btc9lDw"),
-    ("4 task", "https://youtu.be/pS_6_b_o-I4"),
-    ("5 task", "https://youtu.be/xwVU5mzXNSE"),
-    ("6 task", "https://youtu.be/hIYzABmh6IU"),
-    ("7 task", "https://youtu.be/OjfGz1ydfPQ"),
-    ("8 task", "https://youtu.be/-k3BcZaUMm0"),
+    (13,"1 task", "link","https://youtu.be/0XczPenRWOk"),
+    (14,"2 task", "link","https://youtu.be/qca6bfIqrFk"),
+    (15,"3 task", "link","https://youtu.be/jdb4Btc9lDw"),
+    (16,"4 task", "link", "https://youtu.be/pS_6_b_o-I4"),
+    (17,"5 task", "link", "https://youtu.be/xwVU5mzXNSE"),
+    (18,"6 task", "link", "https://youtu.be/hIYzABmh6IU"),
+    (19,"7 task", "link", "https://youtu.be/OjfGz1ydfPQ"),
+    (20,"8 task", "link", "https://youtu.be/-k3BcZaUMm0"),
    ]
 
    # VIDEOMATH ={

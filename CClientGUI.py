@@ -179,9 +179,12 @@ class CClientGUI(CClientBL):
                 messagebox.showinfo("OK", obj.get("msg", "Registered"))
 
                 username = data.get("login", "").strip()
+                user_id = obj.get("user_id")
+
+                print("REGISTER USER_ID =", user_id)
 
                 loc_wnd._this_wnd.destroy()
-                SecondPageGUI(self._root, username)
+                SecondPageGUI(self._root, username, user_id)
 
             else:
                 messagebox.showerror("Error", obj.get("error", "Registration failed"))
@@ -207,9 +210,12 @@ class CClientGUI(CClientBL):
                 messagebox.showinfo("OK", obj.get("msg", "Signed in"))
 
                 username = data.get("login", "").strip()
+                user_id = obj.get("user_id")
+
+                print("REGISTER USER_ID =", user_id)
 
                 loc_wnd._this_wnd.destroy()
-                SecondPageGUI(self._root, username)
+                SecondPageGUI(self._root, username, user_id)
 
             else:
                 messagebox.showerror("Error", obj.get("error", "Sign in failed"))

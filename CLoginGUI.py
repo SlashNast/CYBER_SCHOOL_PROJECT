@@ -1,3 +1,4 @@
+#login page
 from mainpage import SecondPageGUI
 
 
@@ -32,6 +33,7 @@ class CLoginGUI:
         # data for the registration
         self._login = ''
         self._pw = ''
+        self._id = 0
         self.callback_register = callback_register
         self.callback_signin = callback_signin
 
@@ -40,10 +42,11 @@ class CLoginGUI:
     def get_login(self) -> str:
         return self._login
 
-
-
     def get_pw(self) -> str:
         return self._pw
+
+    def get_id(self) -> int:
+        return self._id
 
     def create_ui(self):
         # ====== Window size ======
@@ -253,31 +256,42 @@ class CLoginGUI:
 if __name__ == "__main__":
 
     from Users_db import add_user
+    from Users_db import get_user_id
 
     main_gui = None
 
+
     def register_cb(data):
+
         global main_gui
+        print("REGISTER_CB STARTED")
         login = data["login"].strip()
         pw = data["password"].strip()
 
+
+
         if not login:
-            messagebox.showerror("Ошибка", "Логин не может быть пустым")
+            messagebox.showerror("error", "login can't be empty")
             return
 
         try:
             # ВАЖНО: add_user принимает ТОЛЬКО 1 аргумент — login
-            add_user(login)
+            add_user(login, pw)
             messagebox.showinfo("OK", f"User {login} added.")
+
+
             SecondPageGUI(main_gui._this_wnd, main_gui.get_login())
         except Exception as e:
-            messagebox.showerror("Ошибка добавления", str(e))
+            messagebox.showerror("error", str(e))
+
 
     def signin_cb(data):
         global main_gui
+        print("REGISTER_CB STARTED")
         # здесь будет логика проверки логина/пароля — сейчас просто заглушка
         messagebox.showinfo("Sign in", f"trying enter as:  {data['login']}")
-        SecondPageGUI(main_gui._this_wnd, main_gui.get_login())
+        SecondPageGUI(main_gui._this_wnd, main_gui.get_login(),1)
+
 
     main_gui = CLoginGUI(None, register_cb, signin_cb)
     main_gui.run()

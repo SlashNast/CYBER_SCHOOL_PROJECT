@@ -1,5 +1,7 @@
+#serverBL.py
 import threading
 from protocol import *
+import Users_db
 
 
 class CServerBL:
@@ -15,6 +17,12 @@ class CServerBL:
         self._server_socket = None
         self._is_srv_running = True
         self._client_handlers = []
+
+        Users_db.ensure_db()
+        Users_db.ensure_db_materials()
+        Users_db.seed_materials()
+        Users_db.ensure_db_favorites()
+
 
     def stop_server(self):
         try:
@@ -113,5 +121,6 @@ class CClientHandler(threading.Thread):
 
 
 if __name__ == "__main__":
+
     server = CServerBL(SERVER_HOST,PORT)
     server.start_server()

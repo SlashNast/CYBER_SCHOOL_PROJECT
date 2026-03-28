@@ -1,22 +1,26 @@
-from sampleforbagrutmath import VideoGridPage
+#mainpage
 from BagrutMathPDF import Mathpdfs
 from MathVideos import MathVideos
+from basketpage import Basket
 from aichat_pageGUI import AIChatPage
 import tkinter as tk
+from tkinter import messagebox
 
 
 
 class SecondPageGUI:
-    def __init__(self, parent_wnd, username):
+    def __init__(self, parent_wnd, username,  user_id):
         self._parent_wnd = parent_wnd
         self._this_wnd = tk.Toplevel(parent_wnd) if parent_wnd else tk.Tk()
         self.username = username
+        self.id_of_user = user_id
         self._this_wnd.title(f"Hi, {self.username} 👋 !! pls  Choose learning program")
 
 
         self._canvas = None
         self._math_5points_window = None
         self._math_videos_window = None
+        self._favorites_window = None
         self._AI_chat_window = None
 
         # чтобы под-опции не наслаивались
@@ -85,9 +89,9 @@ class SecondPageGUI:
 
 
         self._canvas.create_text(
-            (self.panel_x1 + self.panel_x2) // 2, self.panel_y1 + 80,
+            (self.panel_x1 + self.panel_x2) // 2, self.panel_y1 + 100,
             text=f"Hi!! {self.username} choose your learning program",
-            font=("Calibri", 15),
+            font=("Calibri", 16),
             fill=self.MUTED
         )
 
@@ -107,6 +111,9 @@ class SecondPageGUI:
 
         self._btn_school = self._make_button("SCHOOL HELP", lambda: self.on_choose("school"))
         self._btn_school.place(x=start_x + btn_w + gap, y=btn_y, width=btn_w, height=btn_h)
+
+        self._btn_favorites= self._make_button("FAVORITES", command=self.favorites)
+        self._btn_favorites.place(x=start_x + btn_w + gap, y=btn_y+200, width=btn_w, height=btn_h)
 
 
 
@@ -160,9 +167,13 @@ class SecondPageGUI:
         elif program_type == "bagrut":
             self.show_bagrut_options()
 
+
+
+
     def on_choose_bagrut(self, program_type: str):
         if program_type == "bagrutmath":
             self.show_bagrut_math_options()
+
 
     # ================= Submenus =================
 
@@ -187,6 +198,8 @@ class SecondPageGUI:
         self._make_sub_button("HEBREW", base_x, base_y + 55)
         self._make_sub_button("C#", base_x, base_y + 110)
 
+
+
     def show_bagrut_math_options(self):
         self._clear_sub_buttons()
 
@@ -205,8 +218,8 @@ class SecondPageGUI:
             except:
                 self._math_5points_window = None
 
-        self._math_5points_window = Mathpdfs(self._this_wnd)
-        self._math_5points_window.create_ui()
+        self._math_5points_window = Mathpdfs(self._this_wnd, self.id_of_user)
+        #self._math_5points_window.create_ui()
 
     def bagrutvideos(self):
         if self._math_videos_window is not None:
@@ -216,7 +229,17 @@ class SecondPageGUI:
             except:
                 self._math_videos_window = None
 
-        self._math_videos_window = MathVideos(self._this_wnd)
+        self._math_videos_window = MathVideos(self._this_wnd, self.id_of_user) #self.id_of_user
+
+    def favorites(self):
+        if self._favorites_window is not None:
+            try:
+                self._favorites_window._this_wnd.lift()
+                return
+            except:
+                self._favorites_window = None
+
+        self._favorites_window = Basket(self._this_wnd, self.id_of_user)
 
 
 
@@ -229,7 +252,7 @@ class SecondPageGUI:
                 self._AI_chat_window = None
 
         self._AI_chat_window = AIChatPage(self._this_wnd)
-        self._AI_chat_window.create_ui()
+        #self._AI_chat_window.create_ui()
 
 
 
@@ -265,5 +288,22 @@ class SecondPageGUI:
 
 
 if __name__ == "__main__":
-    gui = SecondPageGUI(None)
+    from Users_db import add_to_favorites
+    def add_favorites(data):
+        global main_gui
+        user_id = data["user_id"].strip()
+        material_id = data["material_id"].strip()
+
+        if not user_id:
+            messagebox.showerror("Ошибка", "Логин не может быть пустым")
+            return
+
+        try:
+            add_to_favorites(user_id,material_id)
+            messagebox.showinfo("OK", f"tool {material_id} added.")
+            SecondPageGUI(main_gui._this_wnd, main_gui.get_login(), user_id)
+        except Exception as e:
+            messagebox.showerror("Ошибка добавления", str(e))
+
+    gui = SecondPageGUI(None, "username",1)
     gui.run()
