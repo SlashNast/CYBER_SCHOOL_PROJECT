@@ -29,7 +29,7 @@ class MathVideos:
 
     def on_choose(self, url: str):
         if not url:
-            messagebox.showerror("Error", "Video link not found")
+            messagebox.showerror("Error", "Video link not found",  parent=self._this_wnd)
             return
 
         webbrowser.open(url)
@@ -38,9 +38,12 @@ class MathVideos:
 
         ok = Users_db.add_to_favorites(self.user_id, material_id )
         if ok:
-            messagebox.showinfo("SAVE", f"Saved:\n{title}")
+            messagebox.showinfo("SAVE", f"Saved:\n{title}",  parent=self._this_wnd)
         else:
-            messagebox.showerror("SAVE", f"This material is already in favorites")
+            messagebox.showerror("SAVE", f"This material is already in favorites",  parent=self._this_wnd)
+
+    def go_back(self):
+        self._this_wnd.destroy()
 
 
 
@@ -195,6 +198,27 @@ class MathVideos:
             font=("Calibri", 11),
             fill="#7e8593"
         )
+
+        self._btn_back = tk.Button(
+            self._canvas,
+            text="BACK",
+            font=("Calibri", 12, "bold"),
+            fg=self.BTN_TEXT,
+            bg=self.BTN_BG,
+            activeforeground=self.BTN_TEXT,
+            activebackground=self.BTN_HOVER,
+            bd=1,
+            relief="solid",
+            highlightthickness=1,
+            highlightbackground=self.BTN_BORDER,
+            highlightcolor=self.BTN_BORDER,
+            command=self.go_back,
+            cursor="hand2"
+        )
+        self._btn_back.place(x=20, y=20, width=100, height=40)
+
+        self._btn_back.bind("<Enter>", lambda e: e.widget.config(bg=self.BTN_HOVER))
+        self._btn_back.bind("<Leave>", lambda e: e.widget.config(bg=self.BTN_BG))
 
     # ================= Buttons =================
 

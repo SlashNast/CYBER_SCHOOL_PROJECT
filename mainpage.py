@@ -1,5 +1,6 @@
 #mainpage
 from BagrutMathPDF import Mathpdfs
+from BagrutPhysPDF import Physpdfs
 from MathVideos import MathVideos
 from basketpage import Basket
 from aichat_pageGUI import AIChatPage
@@ -18,7 +19,8 @@ class SecondPageGUI:
 
 
         self._canvas = None
-        self._math_5points_window = None
+        self._math_pdfs_window = None
+        self._phys_pdfs_window = None
         self._math_videos_window = None
         self._favorites_window = None
         self._AI_chat_window = None
@@ -173,6 +175,9 @@ class SecondPageGUI:
     def on_choose_bagrut(self, program_type: str):
         if program_type == "bagrutmath":
             self.show_bagrut_math_options()
+        if program_type == "bagrutphys":
+            self.show_bagrut_phys_options()
+
 
 
     # ================= Submenus =================
@@ -188,6 +193,8 @@ class SecondPageGUI:
         self._make_sub_button("HEBREW", base_x, base_y + 55)
         self._make_sub_button("C#", base_x, base_y + 110)
 
+
+
     def show_bagrut_options(self):
         self._clear_sub_buttons()
 
@@ -195,7 +202,7 @@ class SecondPageGUI:
         base_y = self.panel_y1 + 200
 
         self._make_sub_button("MATH", base_x, base_y, command=lambda: self.on_choose_bagrut("bagrutmath"))
-        self._make_sub_button("HEBREW", base_x, base_y + 55)
+        self._make_sub_button("PHYS", base_x, base_y + 55,  command=lambda: self.on_choose_bagrut("bagrutphys"))
         self._make_sub_button("C#", base_x, base_y + 110)
 
 
@@ -206,22 +213,49 @@ class SecondPageGUI:
         base_x = self.panel_x1 + 140
         base_y = self.panel_y1 + 200
 
-        self._make_sub_button("BAGRUTS", base_x, base_y, command=self.bagrutpdfs)
-        self._make_sub_button("VIDEOS", base_x, base_y + 55, command = self.bagrutvideos)
+        self._make_sub_button("BAGRUTS", base_x, base_y, command=self.mathbagrutpdfs)
+        self._make_sub_button("VIDEOS", base_x, base_y + 55, command = self.mathbagrutvideos)
         self._make_sub_button("OTHERS", base_x, base_y + 110)
 
-    def bagrutpdfs(self):
-        if self._math_5points_window is not None:
+
+
+    def show_bagrut_phys_options(self):
+        self._clear_sub_buttons()
+
+        base_x = self.panel_x1 + 140
+        base_y = self.panel_y1 + 200
+
+        self._make_sub_button("BAGRUTS", base_x, base_y, command=self.physbagrutpdfs)
+        self._make_sub_button("VIDEOS", base_x, base_y + 55, command=self.mathbagrutvideos)
+
+
+
+
+    def mathbagrutpdfs(self):
+        if self._math_pdfs_window is not None:
             try:
-                self._math_5points_window._this_wnd.lift()
+                self._math_pdfs_window._this_wnd.lift()
                 return
             except:
-                self._math_5points_window = None
+                self._math_pdfs_window = None
 
-        self._math_5points_window = Mathpdfs(self._this_wnd, self.id_of_user)
-        #self._math_5points_window.create_ui()
+        self._math_pdfs_window = Mathpdfs(self._this_wnd, self.id_of_user)
 
-    def bagrutvideos(self):
+
+    def physbagrutpdfs(self):
+        if self._phys_pdfs_window is not None:
+            try:
+                self._phys_pdfs_window._this_wnd.lift()
+                return
+            except:
+                self._phys_pdfs_window = None
+
+        self._phys_pdfs_window = Physpdfs(self._this_wnd, self.id_of_user)
+
+
+
+
+    def mathbagrutvideos(self):
         if self._math_videos_window is not None:
             try:
                 self._math_videos_window._this_wnd.lift()
@@ -230,6 +264,8 @@ class SecondPageGUI:
                 self._math_videos_window = None
 
         self._math_videos_window = MathVideos(self._this_wnd, self.id_of_user) #self.id_of_user
+
+
 
     def favorites(self):
         if self._favorites_window is not None:

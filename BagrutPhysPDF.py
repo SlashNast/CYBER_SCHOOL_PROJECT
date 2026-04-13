@@ -1,51 +1,72 @@
-#basket.py
+#BagrutPhysPdf.py
 import tkinter as tk
+import os
 import webbrowser
 from tkinter import messagebox
 import Users_db
 
 
 
-class Basket:
-    def __init__(self, parent_wnd, id_of_user):
-
+class Physpdfs:
+    def __init__(self, parent_wnd, user_id):
         self._parent_wnd = parent_wnd
-        self.id_of_user = id_of_user
+        self.user_id = user_id
         self._this_wnd = tk.Toplevel(parent_wnd) if parent_wnd else tk.Tk()
-        self._this_wnd.title("Your saved books:")
 
+        self._this_wnd.title("Choose learning program")
 
         self._canvas = None
-        self._sub_buttons = []
-        self._btn_back = None
 
-        self.VIDEOS = Users_db.get_user_favorite_materials(self.id_of_user)
+
+
+        self.PDFPHYS_DIR = os.path.join(self._get_project_root(), "pdfsBAGRUTPHYS")
+        self.PDFS = [
+            (21, "36282, S25", "summer2025, שאלון,36282.pdf"),
+            (22, "35361, S25", "summer2025, שאלון,36361.pdf"),
+            (23, "35371, S25", "summer2025, שאלון,36371.pdf"),
+            (24, "35382, S25", "summer2025, שאלון,36382.pdf"),
+
+        ]
 
         self.create_ui()
+        #self._create_scroll_area()
+        #self._fill_buttons()
 
-    # ================= Logic =================
+    def _get_project_root(self):
+        return os.path.dirname(os.path.abspath(__file__))
 
-    def on_choose(self, url: str):
-        if not url:
-            messagebox.showerror("Error", "Video link not found")
+    def on_choose(self, filename: str):
+        if not filename:
+            messagebox.showerror("Error", "No PDF file provided",  parent=self._this_wnd)
             return
 
-        webbrowser.open(url)
+        pdf_path = os.path.join(self.PDFPHYS_DIR, filename)
+        self.open_pdf(pdf_path)
 
-    def on_remove(self, material_id: int, title: str):
-        ok = Users_db.remove_from_favorites(self.id_of_user, material_id)
+
+
+    def on_save(self, material_id, title):
+        ok = Users_db.add_to_favorites(self.user_id, material_id)
         if ok:
-            messagebox.showinfo("REMOVE", f"Removed:\n{title}",  parent=self._this_wnd)
+            messagebox.showinfo("SAVE", f"Saved:\n{title}", parent=self._this_wnd)
         else:
-            messagebox.showerror("REMOVE", "Could not remove material",  parent=self._this_wnd)
+            messagebox.showerror("SAVE", f"This material is already in favorites",  parent=self._this_wnd)
 
     def go_back(self):
         self._this_wnd.destroy()
 
-    # ================= UI =================
+
+
+    def open_pdf(self, pdf_path: str):
+        pdf_abs = os.path.abspath(pdf_path)
+
+        if not os.path.exists(pdf_abs):
+            messagebox.showerror("Error", f"PDF not found:\n{pdf_abs}",  parent=self._this_wnd)
+            return
+
+        webbrowser.open_new(r"file://" + pdf_abs)
 
     def create_ui(self):
-
         # ====== Window ======
         self._this_wnd.state("zoomed")
         self._this_wnd.resizable(True, True)
@@ -75,48 +96,38 @@ class Basket:
         self._canvas.pack(fill="both", expand=True)
         self._canvas.bind("<Configure>", self._draw_grid)
 
-        self.panel_x1, self.panel_y1 = 420, 100
-        self.panel_x2, self.panel_y2 = 1580, 620
+        self.panel_x1, self.panel_y1 = 520, 110
+        self.panel_x2, self.panel_y2 = 1480, 560
 
         # shadow
         self._canvas.create_rectangle(
-            self.panel_x1 + 6, self.panel_y1 + 6,
-            self.panel_x2 + 6, self.panel_y2 + 6,
+            self.panel_x1 + 6, self.panel_y1 + 6, self.panel_x2 + 6, self.panel_y2 + 6,
             fill="#07070b", outline=""
         )
-
         # panel
         self._canvas.create_rectangle(
-            self.panel_x1, self.panel_y1,
-            self.panel_x2, self.panel_y2,
+            self.panel_x1, self.panel_y1, self.panel_x2, self.panel_y2,
             fill=self.PANEL, outline=self.BORDER, width=2
         )
-
-        # neon line
+        # neon top line
         self._canvas.create_line(
-            self.panel_x1, self.panel_y1,
-            self.panel_x2, self.panel_y1,
+            self.panel_x1, self.panel_y1, self.panel_x2, self.panel_y1,
             fill=self.CYAN, width=3
         )
 
         # ====== Title ======
         self._canvas.create_text(
-            (self.panel_x1 + self.panel_x2) // 2,
-            self.panel_y1 + 40,
-            text="VIDEO SOLUTIONS",
+            (self.panel_x1 + self.panel_x2) // 2, self.panel_y1 + 40,
+            text="CHOOSE YOUR BAGRUT EXAM",
             font=("Calibri", 26, "bold"),
             fill=self.TEXT
         )
-
         self._canvas.create_text(
-            (self.panel_x1 + self.panel_x2) // 2,
-            self.panel_y1 + 70,
-            text="choose a task",
+            (self.panel_x1 + self.panel_x2) // 2, self.panel_y1 + 70,
+            text="choose your sheelon",
             font=("Calibri", 14),
             fill=self.MUTED
         )
-
-        # ===== Scroll area =====
 
         self.scroll_canvas = tk.Canvas(
             self._canvas,
@@ -141,39 +152,43 @@ class Basket:
         list_w = list_x2 - list_x1
         list_h = list_y2 - list_y1
 
+        # размещаем scroll_canvas поверх твоего большого canvas
         self.scroll_canvas.place(x=list_x1, y=list_y1, width=list_w, height=list_h)
         self.scrollbar.place(x=list_x2 + 8, y=list_y1, height=list_h)
 
+        # frame внутри canvas — сюда будем добавлять кнопки
         self.list_frame = tk.Frame(self.scroll_canvas, bg=self.PANEL)
+        self.list_window_id = self.scroll_canvas.create_window((0, 0), window=self.list_frame, anchor="nw")
 
-        self.list_window_id = self.scroll_canvas.create_window(
-            (0, 0),
-            window=self.list_frame,
-            anchor="nw"
-        )
-
+        # важно: обновлять scrollregion, когда меняется размер контента
         self.list_frame.bind("<Configure>", self._on_list_frame_configure)
         self.scroll_canvas.bind("<Configure>", self._on_scroll_canvas_configure)
 
+        # колесо мыши (чтобы можно было листать)
         self.scroll_canvas.bind_all("<MouseWheel>", self._on_mousewheel)
 
-        # ===== Buttons =====
+
+
 
         self.list_frame.grid_columnconfigure(0, weight=1)
         self.list_frame.grid_columnconfigure(1, weight=0)
 
-        for row, (material_id, title, path_or_link) in enumerate(self.VIDEOS):
-            big_btn = self._make_list_button(title, lambda u=path_or_link: self.on_choose(u))
-
+        for row, (material_id, title, filename) in enumerate(self.PDFS):
+            big_btn = self._make_list_button(
+                title,
+                lambda f=filename: self.on_choose(f)
+            )
             big_btn.grid(
                 row=row,
                 column=0,
                 padx=(10, 8),
                 pady=6
             )
-            save_btn = self._make_list_saved("REMOVE",
-                                             lambda m_id=material_id, t=title, u=path_or_link: self.on_remove(m_id, t))
 
+            save_btn = self._make_list_saved(
+                "SAVE",
+                lambda m_id=material_id, t=title: self.on_save(m_id, t)
+            )
             save_btn.grid(
                 row=row,
                 column=1,
@@ -181,11 +196,14 @@ class Basket:
                 pady=6
             )
 
-        # footer
+            self._this_wnd.update_idletasks()
+            self.scroll_canvas.configure(scrollregion=self.scroll_canvas.bbox("all"))
+
+
+        #text:
         self._canvas.create_text(
-            (self.panel_x1 + self.panel_x2) // 2,
-            self.panel_y2 - 28,
-            text="tip: pick a task → watch solution",
+            (self.panel_x1 + self.panel_x2) // 2, self.panel_y2 - 28,
+            text="tip: pick a program → then pick a subject",
             font=("Calibri", 11),
             fill="#7e8593"
         )
@@ -206,15 +224,10 @@ class Basket:
             command=self.go_back,
             cursor="hand2"
         )
-        self._btn_back.place(x= 20, y=20, width=100, height=40)
+        self._btn_back.place(x=20, y=20, width=100, height=40)
 
         self._btn_back.bind("<Enter>", lambda e: e.widget.config(bg=self.BTN_HOVER))
         self._btn_back.bind("<Leave>", lambda e: e.widget.config(bg=self.BTN_BG))
-
-    # ================= Buttons =================
-
-
-
 
     def _make_list_button(self, text, command):
         btn = tk.Button(
@@ -242,6 +255,7 @@ class Basket:
 
         return btn
 
+
     def _make_list_saved(self, text, command):
         btn = tk.Button(
             self.list_frame,
@@ -266,65 +280,48 @@ class Basket:
 
         return btn
 
-    # ================= Scroll =================
+
 
     def _on_list_frame_configure(self, event):
-        self.scroll_canvas.configure(
-            scrollregion=self.scroll_canvas.bbox("all")
-        )
+            # пересчитываем область прокрутки под размер содержимого
+            self.scroll_canvas.configure(scrollregion=self.scroll_canvas.bbox("all"))
 
     def _on_scroll_canvas_configure(self, event):
-        self.scroll_canvas.itemconfig(
-            self.list_window_id,
-            width=event.width
-        )
+            # чтобы внутренний frame растягивался по ширине scroll_canvas
+            self.scroll_canvas.itemconfig(self.list_window_id, width=event.width)
 
     def _on_mousewheel(self, event):
-        self.scroll_canvas.yview_scroll(
-            int(-1 * (event.delta / 120)),
-            "units"
-        )
+            # Windows: event.delta обычно кратен 120
+            self.scroll_canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
 
-    # ================= Grid =================
+        # ================= Grid =================
 
     def _draw_grid(self, event=None):
         if self._canvas is None:
             return
 
         self._canvas.delete("grid")
-
         width = self._canvas.winfo_width()
         height = self._canvas.winfo_height()
-
         step = 45
 
         for x in range(0, width, step):
-            self._canvas.create_line(
-                x, 0, x, height,
-                fill="#2D3458",
-                tags="grid"
-            )
-
+            self._canvas.create_line(x, 0, x, height, fill="#2D3458", tags="grid")
         for y in range(0, height, step):
-            self._canvas.create_line(
-                0, y, width, y,
-                fill="#2D3458",
-                tags="grid"
-            )
+            self._canvas.create_line(0, y, width, y, fill="#2D3458", tags="grid")
 
         self._canvas.tag_lower("grid")
 
-    # ================= Window helpers =================
+        # ================= Window helpers =================
 
     def show_modal(self):
         self._this_wnd.grab_set()
 
-    #def run(self):
-        #if self._parent_wnd is None:
-            #self._this_wnd.mainloop()
+    def run(self):
+        # запускать mainloop только если это корневое окно
+        if self._parent_wnd is None:
+            self._this_wnd.mainloop()
 
-
-#if __name__ == "__main__":
-
-    #gui = Basket(None, 1)
-    #gui.run()
+if __name__ == "__main__":
+    gui = Physpdfs(None,1)
+    gui.run()

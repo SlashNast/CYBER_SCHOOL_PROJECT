@@ -30,6 +30,11 @@ MATERIALS_DATA = [
     (18, "6 task video", "link",  "https://youtu.be/hIYzABmh6IU"),
     (19, "7 task video", "link", "https://youtu.be/OjfGz1ydfPQ"),
     (20, "8 task video", "link", "https://youtu.be/-k3BcZaUMm0"),
+    (21, "36282, S25", "pdf", r"C:\Users\Ulian\PycharmProjects\ciber2025\firstprojectcyber\pdfsBAGRUTPHYS\summer2025, שאלון,36282.pdf"),
+    (22, "35361, S25", "pdf", r"C:\Users\Ulian\PycharmProjects\ciber2025\firstprojectcyber\pdfsBAGRUTPHYS\summer2025, שאלון,36361.pdf"),
+    (23, "35371, S25", "pdf", r"C:\Users\Ulian\PycharmProjects\ciber2025\firstprojectcyber\pdfsBAGRUTPHYS\summer2025, שאלון,36371.pdf"),
+    (24, "35382, S25", "pdf", r"C:\Users\Ulian\PycharmProjects\ciber2025\firstprojectcyber\pdfsBAGRUTPHYS\summer2025, שאלון,36382.pdf"),
+
 ]
 
 

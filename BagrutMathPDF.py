@@ -44,20 +44,23 @@ class Mathpdfs:
 
     def on_choose(self, filename: str):
         if not filename:
-            messagebox.showerror("Error", "No PDF file provided")
+            messagebox.showerror("Error", "No PDF file provided",  parent=self._this_wnd)
             return
 
         pdf_path = os.path.join(self.PDFMAT_DIR, filename)
         self.open_pdf(pdf_path)
+
+    def go_back(self):
+        self._this_wnd.destroy()
 
 
 
     def on_save(self, material_id, title):
         ok = Users_db.add_to_favorites(self.user_id, material_id)
         if ok:
-            messagebox.showinfo("SAVE", f"Saved:\n{title}")
+            messagebox.showinfo("SAVE", f"Saved:\n{title}",  parent=self._this_wnd)
         else:
-            messagebox.showerror("SAVE", f"This material is already in favorites")
+            messagebox.showerror("SAVE", f"This material is already in favorites",  parent=self._this_wnd)
 
 
 
@@ -65,7 +68,7 @@ class Mathpdfs:
         pdf_abs = os.path.abspath(pdf_path)
 
         if not os.path.exists(pdf_abs):
-            messagebox.showerror("Error", f"PDF not found:\n{pdf_abs}")
+            messagebox.showerror("Error", f"PDF not found:\n{pdf_abs}",  parent=self._this_wnd)
             return
 
         webbrowser.open_new(r"file://" + pdf_abs)
@@ -204,13 +207,35 @@ class Mathpdfs:
             self.scroll_canvas.configure(scrollregion=self.scroll_canvas.bbox("all"))
 
 
-        #text:
         self._canvas.create_text(
             (self.panel_x1 + self.panel_x2) // 2, self.panel_y2 - 28,
             text="tip: pick a program → then pick a subject",
             font=("Calibri", 11),
             fill="#7e8593"
         )
+
+        self._btn_back = tk.Button(
+            self._canvas,
+            text="BACK",
+            font=("Calibri", 12, "bold"),
+            fg=self.BTN_TEXT,
+            bg=self.BTN_BG,
+            activeforeground=self.BTN_TEXT,
+            activebackground=self.BTN_HOVER,
+            bd=1,
+            relief="solid",
+            highlightthickness=1,
+            highlightbackground=self.BTN_BORDER,
+            highlightcolor=self.BTN_BORDER,
+            command=self.go_back,
+            cursor="hand2"
+        )
+        self._btn_back.place(x=20, y=20, width=100, height=40)
+
+        self._btn_back.bind("<Enter>", lambda e: e.widget.config(bg=self.BTN_HOVER))
+        self._btn_back.bind("<Leave>", lambda e: e.widget.config(bg=self.BTN_BG))
+
+
 
     def _make_list_button(self, text, command):
         btn = tk.Button(
