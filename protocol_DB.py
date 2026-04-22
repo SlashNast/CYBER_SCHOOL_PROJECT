@@ -26,11 +26,19 @@ def create_response_msg_DB(cmd: str, args: list) -> str:
             return json.dumps({"success": False, "error": "User already exists"})
 
         if cmd == "SIGNIN":
+            user_id = Users_db.get_user_id(login)
+
+            if user_id is None:
+                return json.dumps({
+                    "success": False,
+                    "error": "User does not exist"
+                })
+
             ok = Users_db.check_user(login, password)
             if ok:
-                user_id = Users_db.get_user_id(login)
                 return json.dumps({"success": True, "msg": f"Welcome {login}", "user_id": user_id})
             return json.dumps({"success": False, "error": "Wrong login/password"})
+
 
         if cmd == "ADD_FAVORITE":
             user_id = data.get("user_id")

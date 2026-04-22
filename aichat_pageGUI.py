@@ -36,7 +36,6 @@ class AIChatPage:
     def go_back(self):
         self._this_wnd.destroy()
 
-
     def create_ui(self):
         # ====== window ======
         self._this_wnd.state("zoomed")
@@ -46,45 +45,8 @@ class AIChatPage:
         # ====== canvas ======
         self._canvas = tk.Canvas(self._this_wnd, bg=self.BG, highlightthickness=0, bd=0)
         self._canvas.pack(fill="both", expand=True)
-        self._canvas.bind("<Configure>", self._draw_grid)
 
-        # ====== main panel ======
-        panel_x1, panel_y1 = 420, 90
-        panel_x2, panel_y2 = 1500, 760
-
-        # shadow
-        self._canvas.create_rectangle(
-            panel_x1 + 6, panel_y1 + 6, panel_x2 + 6, panel_y2 + 6,
-            fill="#07070b", outline=""
-        )
-        # panel
-        self._canvas.create_rectangle(
-            panel_x1, panel_y1, panel_x2, panel_y2,
-            fill=self.PANEL, outline=self.BORDER, width=2
-        )
-        # neon top line
-        self._canvas.create_line(panel_x1, panel_y1, panel_x2, panel_y1, fill=self.CYAN, width=3)
-
-        # ====== title ======
-        self._canvas.create_text(
-            (panel_x1 + panel_x2) // 2, panel_y1 + 40,
-            text="AI CHAT",
-            font=("Calibri", 26, "bold"),
-            fill=self.TEXT
-        )
-        self._canvas.create_text(
-            (panel_x1 + panel_x2) // 2, panel_y1 + 70,
-            text="ask anything • get instant help",
-            font=("Calibri", 14),
-            fill=self.MUTED
-        )
-
-        # ====== chat area (scrolled text) ======
-        chat_x = panel_x1 + 60
-        chat_y = panel_y1 + 110
-        chat_w = (panel_x2 - panel_x1) - 120
-        chat_h = 470
-
+        # ====== widgets ======
         self._chat_box = scrolledtext.ScrolledText(
             self._this_wnd,
             wrap="word",
@@ -98,12 +60,7 @@ class AIChatPage:
             highlightbackground=self.BORDER,
             highlightcolor=self.CYAN
         )
-        self._chat_box.place(x=chat_x, y=chat_y, width=chat_w, height=chat_h)
         self._chat_box.configure(state="disabled")
-
-        # ====== input row ======
-        input_y = chat_y + chat_h + 22
-        entry_w = chat_w - 170
 
         self._entry = tk.Entry(
             self._this_wnd,
@@ -117,7 +74,6 @@ class AIChatPage:
             highlightbackground=self.BORDER,
             highlightcolor=self.CYAN
         )
-        self._entry.place(x=chat_x, y=input_y, width=entry_w, height=46)
         self._entry.bind("<Return>", lambda e: self._on_send())
 
         self._btn_send = tk.Button(
@@ -136,7 +92,6 @@ class AIChatPage:
             command=self._on_send,
             cursor="hand2"
         )
-        self._btn_send.place(x=chat_x + entry_w + 18, y=input_y, width=152, height=46)
         self._btn_send.bind("<Enter>", lambda e: e.widget.config(bg=self.BTN_HOVER))
         self._btn_send.bind("<Leave>", lambda e: e.widget.config(bg=self.BTN_BG))
 
@@ -156,10 +111,83 @@ class AIChatPage:
             command=self.go_back,
             cursor="hand2"
         )
-        self._btn_back.place(x=20, y=20, width=100, height=40)
-
         self._btn_back.bind("<Enter>", lambda e: e.widget.config(bg=self.BTN_HOVER))
         self._btn_back.bind("<Leave>", lambda e: e.widget.config(bg=self.BTN_BG))
+
+        self._canvas.bind("<Configure>", self._redraw_layout)
+        self._this_wnd.after(50, self._redraw_layout)
+
+        # greeting
+        self._append("AI", "Hi! Write your question below and press SEND 🙂")
+
+    def _redraw_layout(self, event=None):
+        if self._canvas is None:
+            return
+
+        self._canvas.delete("all")
+
+        width = self._canvas.winfo_width()
+        height = self._canvas.winfo_height()
+
+        if width <= 1 or height <= 1:
+            return
+
+        self._draw_grid()
+
+        # ====== main panel ======
+        panel_w = 1080
+        panel_h = 670
+
+        panel_x1 = (width - panel_w) // 2
+        panel_y1 = (height - panel_h) // 2
+        panel_x2 = panel_x1 + panel_w
+        panel_y2 = panel_y1 + panel_h
+
+        # shadow
+        self._canvas.create_rectangle(
+            panel_x1 + 6, panel_y1 + 6, panel_x2 + 6, panel_y2 + 6,
+            fill="#07070b", outline=""
+        )
+
+        # panel
+        self._canvas.create_rectangle(
+            panel_x1, panel_y1, panel_x2, panel_y2,
+            fill=self.PANEL, outline=self.BORDER, width=2
+        )
+
+        # neon top line
+        self._canvas.create_line(panel_x1, panel_y1, panel_x2, panel_y1, fill=self.CYAN, width=3)
+
+        # title
+        self._canvas.create_text(
+            (panel_x1 + panel_x2) // 2, panel_y1 + 40,
+            text="AI CHAT",
+            font=("Calibri", 26, "bold"),
+            fill=self.TEXT
+        )
+        self._canvas.create_text(
+            (panel_x1 + panel_x2) // 2, panel_y1 + 70,
+            text="ask anything • get instant help",
+            font=("Calibri", 14),
+            fill=self.MUTED
+        )
+
+        # ====== chat area ======
+        chat_x = panel_x1 + 60
+        chat_y = panel_y1 + 110
+        chat_w = (panel_x2 - panel_x1) - 120
+        chat_h = 470
+
+        self._chat_box.place(x=chat_x, y=chat_y, width=chat_w, height=chat_h)
+
+        # ====== input row ======
+        input_y = chat_y + chat_h + 22
+        entry_w = chat_w - 170
+
+        self._entry.place(x=chat_x, y=input_y, width=entry_w, height=46)
+        self._btn_send.place(x=chat_x + entry_w + 18, y=input_y, width=152, height=46)
+
+        self._btn_back.place(x=20, y=20, width=100, height=40)
 
         # ====== footer ======
         self._canvas.create_text(
@@ -169,8 +197,7 @@ class AIChatPage:
             fill="#7e8593"
         )
 
-        # greeting
-        self._append("AI", "Hi! Write your question below and press SEND 🙂")
+
 
     def _append(self, who: str, msg: str):
         self._chat_box.configure(state="normal")
@@ -207,19 +234,20 @@ class AIChatPage:
         self._this_wnd.after(0, apply)
 
 
-
-
-
     def _draw_grid(self, event=None):
         if self._canvas is None:
             return
-        self._canvas.delete("grid")
-        w, h = self._canvas.winfo_width(), self._canvas.winfo_height()
+
+        w = self._canvas.winfo_width()
+        h = self._canvas.winfo_height()
         step = 45
+
         for x in range(0, w, step):
             self._canvas.create_line(x, 0, x, h, fill="#2D3458", tags="grid")
+
         for y in range(0, h, step):
             self._canvas.create_line(0, y, w, y, fill="#2D3458", tags="grid")
+
         self._canvas.tag_lower("grid")
 
     def run(self):

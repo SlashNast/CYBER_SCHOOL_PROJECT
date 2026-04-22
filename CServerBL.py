@@ -115,20 +115,25 @@ class CClientHandler(threading.Thread):
                 decrypted_data = aes_decrypt(self._aes_key, encrypted_data)
                 buf = decrypted_data.decode(FORMAT)
 
-                # 2. разбираем обычное сообщение
+                # убираем 4-символьный заголовок длины
+                if len(buf) >= 4 and buf[:4].isdigit():
+                    msg_len = int(buf[:4])
+                    buf = buf[4:4 + msg_len]
+                else:
+                    raise ValueError(f"Invalid protocol header: {buf!r}")
+
                 cmd, args = get_cmd_and_args(buf)
                 write_to_log(f"[SERVER_BL] received decrypted from {self._address} - cmd: {cmd}, args: {args}")
 
                 # 3. создаём ответ
                 if check_cmd(cmd) == 1:
-                    response = create_response_msg(cmd)
-                elif check_cmd(cmd) == 2:
-                    response = create_response_msg_27(cmd, args)
+                    response = create_response_msg(cmd, args)
+
                 elif check_cmd(cmd) == 3:
                     payload = create_response_msg_DB(cmd, args)
                     response = f"{len(payload):04d}{payload}"
                 else:
-                    response = '{"success": true, "msg":"ok"}'
+                    response = '{"success": false, "msg": "unknown command"}'
                     response = f"{len(response):04d}{response}"
 
                 # 4. шифруем ответ через AES

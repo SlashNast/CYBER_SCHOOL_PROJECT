@@ -1,10 +1,11 @@
+#protocol
 import ipaddress
 from datetime import datetime
 import socket
 import random
 import logging
 
-from protocol_27 import *
+
 from protocol_DB import *
 
 SERVER_HOST: str = "0.0.0.0"
@@ -17,6 +18,10 @@ FORMAT: str = 'utf-8'
 DISCONNECT_MSG: str = "EXIT"
 STANDARD_CMD = ("TIME","NAME","RAND",DISCONNECT_MSG)
 
+COMMAND_SEPARATOR = '>'
+PARAMETER_SEPARATOR = '<'
+
+
 # prepare Log file
 LOG_FILE = 'LOG.log'
 logging.basicConfig(filename=LOG_FILE,level=logging.INFO,format='%(asctime)s - %(levelname)s - %(message)s')
@@ -27,10 +32,11 @@ def check_cmd(data) -> int:
     data = data.upper()
     if data in STANDARD_CMD:
         return 1
-    if data in LONG_CMD:
-        return 2
+
     if data in REG_LOGIN_CMD:
         return 3
+
+    return 0
 
 
 def create_request_msg(cmd: str,args: str) -> str:
@@ -42,11 +48,6 @@ def create_request_msg(cmd: str,args: str) -> str:
     if check_cmd(cmd) == 1:  # commands "TIME"....
         request = cmd
 
-    if check_cmd(cmd) == 2:  # commands "Register" and "SignIn"
-        request = cmd
-        if len(args) > 0:
-            request += COMMAND_SEPARATOR + args
-            # request += COMMAND_SEPARATOR + str(PARAMETER_SEPARATOR.join(args))
 
     if check_cmd(cmd) == 3:  # commands DB
         #request = cmd
@@ -57,21 +58,12 @@ def create_request_msg(cmd: str,args: str) -> str:
     return f"{len(request):04d}{request}"
 
 
-def create_response_msg(cmd: str,args: list = []) -> str:
+def create_response_msg(cmd: str,args: list) -> str:
     """Create a valid protocol message, will be sent by server, with length field"""
     response = "Non-supported cmd"
-    if cmd == "TIME":
-        response = str(datetime.now())
-    elif cmd == "NAME":
-        response = socket.gethostname()
-    elif cmd == "RAND":
-        response = f"{random.randint(1,1000)}"
-    elif cmd == DISCONNECT_MSG:
+
+    if cmd == DISCONNECT_MSG:
         response = "Exit request accepted"
-    elif cmd in LONG_CMD:
-        response = create_response_msg_27(cmd,args)
-    elif cmd in REG_LOGIN_CMD:
-        response = create_response_msg_DB(cmd,args)
 
     response = f"{len(response):04d}{response}"
     return response

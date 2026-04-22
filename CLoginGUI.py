@@ -1,5 +1,5 @@
 #login page
-from mainpage import SecondPageGUI
+from mainpageGUI import SecondPageGUI
 
 
 import tkinter as tk
@@ -49,164 +49,208 @@ class CLoginGUI:
         return self._id
 
     def create_ui(self):
-        # ====== Window size ======
-        #WIDTH = 900
-        #HEIGHT = 600
-        #self._this_wnd.geometry(f"{WIDTH}x{HEIGHT}")
-
         self._this_wnd.state("zoomed")
         self._this_wnd.resizable(True, True)
-        self._this_wnd.configure(bg="#0b0b0f")  # фон всего окна
+        self._this_wnd.configure(bg="#0b0b0f")
 
-        # ====== Cyberpunk palette (не режет глаза) ======
-        BG = "#0b0b0f"  # почти чёрный (дорогой)
-        PANEL = "#11111a"  # чуть светлее для панелей
-        TEXT = "#e6e6eb"  # мягкий белый
-        MUTED = "#9aa0aa"  # серо-голубой
-        CYAN = "#22d3ee"  # акцент 1 (неон-циан)
-        PURPLE = "#a855f7"  # акцент 2 (фиолетовый)
-        BORDER = "#1f2233"  # тонкая рамка
+        # ====== Palette ======
+        self.BG = "#0b0b0f"
+        self.PANEL = "#11111a"
+        self.TEXT = "#e6e6eb"
+        self.MUTED = "#9aa0aa"
+        self.CYAN = "#22d3ee"
+        self.PURPLE = "#a855f7"
+        self.BORDER = "#1f2233"
+
+        self.BTN_BG = "#2a2f3a"
+        self.BTN_HOVER = "#343a46"
+        self.BTN_TEXT = "#ffffff"
+        self.BTN_BORDER = "#ffffff"
 
         # ====== Canvas ======
         self._canvas = tk.Canvas(
             self._this_wnd,
-            bg=BG,
+            bg=self.BG,
             highlightthickness=0,
             bd=0
         )
         self._canvas.pack(fill="both", expand=True)
 
-        self._canvas.bind("<Configure>", self._draw_grid)
+        # ====== Entries ======
+        self._entry_login = tk.Entry(
+            self._canvas,
+            font=("Calibri", 16),
+            fg=self.TEXT,
+            bg="#0e0f17",
+            insertbackground=self.TEXT,
+            bd=0,
+            highlightthickness=0
+        )
+
+        self._entry_pw = tk.Entry(
+            self._canvas,
+            font=("Calibri", 16),
+            fg=self.TEXT,
+            bg="#0e0f17",
+            insertbackground=self.TEXT,
+            bd=0,
+            highlightthickness=0,
+            show="*"
+        )
+
+        # ====== Buttons ======
+        self._btn_register = tk.Button(
+            self._canvas,
+            text="REGISTER",
+            font=("Calibri", 14, "bold"),
+            fg=self.BTN_TEXT,
+            bg=self.BTN_BG,
+            activeforeground=self.BTN_TEXT,
+            activebackground=self.BTN_HOVER,
+            bd=1,
+            relief="solid",
+            highlightthickness=1,
+            highlightbackground=self.BTN_BORDER,
+            highlightcolor=self.BTN_BORDER,
+            command=self.on_click_register
+        )
+
+        self._btn_signin = tk.Button(
+            self._canvas,
+            text="SIGN IN",
+            font=("Calibri", 14, "bold"),
+            fg=self.BTN_TEXT,
+            bg=self.BTN_BG,
+            activeforeground=self.BTN_TEXT,
+            activebackground=self.BTN_HOVER,
+            bd=1,
+            relief="solid",
+            highlightthickness=1,
+            highlightbackground=self.BTN_BORDER,
+            highlightcolor=self.BTN_BORDER,
+            command=self.on_click_signin
+        )
+
+        self._canvas.bind("<Configure>", self._redraw_layout)
+        self._this_wnd.after(50, self._redraw_layout)
 
 
-        # лёгкая сетка тонкими линиями
+    def _redraw_layout(self, event=None):
+        self._canvas.delete("all")
 
+        width = self._canvas.winfo_width()
+        height = self._canvas.winfo_height()
 
-        # ====== Main panel (карточка по центру) ======
-        panel_x1, panel_y1 = 520, 110
-        panel_x2, panel_y2 = 1480, 520
+        if width <= 1 or height <= 1:
+            return
 
-        # тень
-        self._canvas.create_rectangle(panel_x1 + 6, panel_y1 + 6, panel_x2 + 6, panel_y2 + 6,
-                                      fill="#07070b", outline="")
-        # панель
-        self._canvas.create_rectangle(panel_x1, panel_y1, panel_x2, panel_y2,
-                                      fill=PANEL, outline=BORDER, width=2)
+        self._draw_grid()
 
-        # верхняя «неоновая» линия (мягкая)
-        self._canvas.create_line(panel_x1, panel_y1, panel_x2, panel_y1, fill=CYAN, width=3)
+        panel_w = 960
+        panel_h = 410
 
-        # ====== Title ======
+        panel_x1 = (width - panel_w) // 2
+        panel_y1 = (height - panel_h) // 2
+        panel_x2 = panel_x1 + panel_w
+        panel_y2 = panel_y1 + panel_h
+
+        # shadow
+        self._canvas.create_rectangle(
+            panel_x1 + 6, panel_y1 + 6,
+            panel_x2 + 6, panel_y2 + 6,
+            fill="#07070b", outline=""
+        )
+
+        # panel
+        self._canvas.create_rectangle(
+            panel_x1, panel_y1, panel_x2, panel_y2,
+            fill=self.PANEL, outline=self.BORDER, width=2
+        )
+
+        # top line
+        self._canvas.create_line(
+            panel_x1, panel_y1, panel_x2, panel_y1,
+            fill=self.CYAN, width=3
+        )
+
+        # title
         self._canvas.create_text(
             (panel_x1 + panel_x2) // 2, panel_y1 + 35,
             text="ONLINE LIBRARY",
             font=("Calibri", 26, "bold"),
-            fill=TEXT
+            fill=self.TEXT
         )
         self._canvas.create_text(
             (panel_x1 + panel_x2) // 2, panel_y1 + 70,
             text="study • practice • progress",
             font=("Calibri", 14),
-            fill=MUTED
+            fill=self.MUTED
         )
 
-        # ====== Labels ======
-        self._canvas.create_text(panel_x1 + 55, panel_y1 + 120,
-                                 text="LOGIN",
-                                 font=("Calibri", 14, "bold"),
-                                 fill=CYAN,
-                                 anchor="w")
+        # labels
+        self._canvas.create_text(
+            panel_x1 + 55, panel_y1 + 120,
+            text="LOGIN",
+            font=("Calibri", 14, "bold"),
+            fill=self.CYAN,
+            anchor="w"
+        )
 
-        self._canvas.create_text(panel_x1 + 55, panel_y1 + 235,
-                                 text="PASSWORD",
-                                 font=("Calibri", 14, "bold"),
-                                 fill=PURPLE,
-                                 anchor="w")
-
-
+        self._canvas.create_text(
+            panel_x1 + 55, panel_y1 + 235,
+            text="PASSWORD",
+            font=("Calibri", 14, "bold"),
+            fill=self.PURPLE,
+            anchor="w"
+        )
 
         entry_w = 360
         entry_h = 40
 
-        # Рамки полей (как UI-блоки)
-        self._canvas.create_rectangle(panel_x1 + 55, panel_y1 + 145, panel_x1 + 55 + entry_w, panel_y1 + 145 + entry_h,
-                                      outline=CYAN, width=2)
-        self._canvas.create_rectangle(panel_x1 + 55, panel_y1 + 260, panel_x1 + 55+ entry_w, panel_y1 + 260 + entry_h,
-                                      outline=PURPLE, width=2)
-
-
-
-        self._entry_login = tk.Entry(
-            self._canvas,
-            font=("Calibri", 16),
-            fg=TEXT,
-            bg="#0e0f17",
-            insertbackground=TEXT,  # цвет курсора
-            bd=0,
-            highlightthickness=0
+        # entry borders
+        self._canvas.create_rectangle(
+            panel_x1 + 55, panel_y1 + 145,
+            panel_x1 + 55 + entry_w, panel_y1 + 145 + entry_h,
+            outline=self.CYAN, width=2
         )
-        self._entry_login.place(x=panel_x1 + 65, y=panel_y1 + 155, width=entry_w - 20, height=entry_h - 14)
 
-
-        self._entry_pw = tk.Entry(
-            self._canvas,
-            font=("Calibri", 16),
-            fg=TEXT,
-            bg="#0e0f17",
-            insertbackground=TEXT,
-            bd=0,
-            highlightthickness=0,
-            show="*"
+        self._canvas.create_rectangle(
+            panel_x1 + 55, panel_y1 + 260,
+            panel_x1 + 55 + entry_w, panel_y1 + 260 + entry_h,
+            outline=self.PURPLE, width=2
         )
-        self._entry_pw.place(x=panel_x1 + 65, y=panel_y1 + 270, width=entry_w - 20, height=entry_h - 14)
 
-        # ====== Buttons ======
-        # Можно оставить твою картинку-кнопку, но тогда текст должен быть светлым.
-
-
-        # Register
-        BTN_BG = "#2a2f3a"
-        BTN_HOVER = "#343a46"
-        BTN_TEXT = "#ffffff"
-        BTN_BORDER = "#ffffff"
-
-        # REGISTER
-        self._btn_register = tk.Button(
-            self._canvas,
-            text="REGISTER",
-            font=("Calibri", 14, "bold"),
-            fg=BTN_TEXT,
-            bg=BTN_BG,
-            activeforeground=BTN_TEXT,
-            activebackground=BTN_HOVER,
-            bd=1,  # тонкая рамка
-            relief="solid",  # чёткая рамка
-            highlightthickness=1,
-            highlightbackground=BTN_BORDER,
-            highlightcolor=BTN_BORDER,
-            command=self.on_click_register
+        # place entries
+        self._entry_login.place(
+            x=panel_x1 + 65,
+            y=panel_y1 + 155,
+            width=entry_w - 20,
+            height=entry_h - 14
         )
-        self._btn_register.place(x=panel_x1 + 650, y=panel_y2 - 220, width=160, height=42)
 
-        # SIGN IN
-        self._btn_signin = tk.Button(
-            self._canvas,
-            text="SIGN IN",
-            font=("Calibri", 14, "bold"),
-            fg=BTN_TEXT,
-            bg=BTN_BG,
-            activeforeground=BTN_TEXT,
-            activebackground=BTN_HOVER,
-            bd=1,
-            relief="solid",
-            highlightthickness=1,
-            highlightbackground=BTN_BORDER,
-            highlightcolor=BTN_BORDER,
-            command=self.on_click_signin
+        self._entry_pw.place(
+            x=panel_x1 + 65,
+            y=panel_y1 + 270,
+            width=entry_w - 20,
+            height=entry_h - 14
         )
-        self._btn_signin.place(x=panel_x1 + 650, y=panel_y2 - 290, width=160, height=42)
 
-        # ====== Small footer ======
+        # place buttons
+        self._btn_signin.place(
+            x=panel_x1 + 650,
+            y=panel_y2 - 290,
+            width=160,
+            height=42
+        )
+
+        self._btn_register.place(
+            x=panel_x1 + 650,
+            y=panel_y2 - 220,
+            width=160,
+            height=42
+        )
+
+        # footer
         self._canvas.create_text(
             (panel_x1 + panel_x2) // 2, panel_y2 - 25,
             text="tip: use strong password • keep your account safe",
@@ -215,8 +259,6 @@ class CLoginGUI:
         )
 
     def _draw_grid(self, event=None):
-        self._canvas.delete("grid")
-
         width = self._canvas.winfo_width()
         height = self._canvas.winfo_height()
         step = 45
@@ -225,7 +267,8 @@ class CLoginGUI:
             self._canvas.create_line(x, 0, x, height, fill="#2D3458", tags="grid")
 
         for y in range(0, height, step):
-            self._canvas.create_line(0, y, width, y, fill="#2D3458", tags="grid")
+            self._canvas.create_line(0, y, width, y, fill="#424558", tags="grid")
+
         self._canvas.tag_lower("grid")
 
     def run(self):

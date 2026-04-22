@@ -1,8 +1,7 @@
+#clientgui
 import tkinter as tk
 from tkinter import *
-
-from PIL.ImageFont import truetype
-from mainpage import  SecondPageGUI
+from mainpageGUI import  SecondPageGUI
 
 from CClientBL import *
 from CLoginGUI import *
@@ -43,73 +42,238 @@ class CClientGUI(CClientBL):
         self.create_ui()
 
     def create_ui(self):
-        self._root.title("Client GUI")
-        self._root.state("zoomed")
+            self._root.title("Client GUI")
+            self._root.state("zoomed")
+            self._root.resizable(True, True)
+            self._root.configure(bg="#0b0b0f")
 
-        self._root.resizable(True,True)
+            # ====== Palette ======
+            self.BG = "#0b0b0f"
+            self.PANEL = "#11111a"
+            self.TEXT = "#e6e6eb"
+            self.MUTED = "#9aa0aa"
+            self.CYAN = "#22d3ee"
+            self.PURPLE = "#a855f7"
+            self.BORDER = "#1f2233"
 
-        # Create a canvas to cover the entire window
-        self._canvas = tk.Canvas(self._root, bg="#0b0b0f", highlightthickness=0, bd= 0)
-        self._canvas.pack(fill='both',expand=True)
+            # ====== Canvas ======
+            self._canvas = tk.Canvas(
+                self._root,
+                bg=self.BG,
+                highlightthickness=0,
+                bd=0
+            )
+            self._canvas.pack(fill="both", expand=True)
+
+            # button image
+            self._img_btn = PhotoImage(file=BTN_IMAGE)
+
+            # ====== Buttons ======
+            self._btn_connect = tk.Button(
+                self._canvas,
+                text="Connect",
+                font=FONT_BUTTON,
+                fg="#c0c0c0",
+                compound="center",
+                image=self._img_btn,
+                bd=0,
+                command=self.on_click_connect
+            )
+
+            self._btn_disconnect = tk.Button(
+                self._canvas,
+                text="Disconnect",
+                font=FONT_BUTTON,
+                fg="#c0c0c0",
+                compound="center",
+                image=self._img_btn,
+                bd=0,
+                command=self.on_click_disconnect,
+                state="disabled"
+            )
+
+            self._btn_send = tk.Button(
+                self._canvas,
+                text="Send Request",
+                font=FONT_BUTTON,
+                fg="#c0c0c0",
+                compound="center",
+                image=self._img_btn,
+                bd=0,
+                command=self.on_click_send,
+                state="disabled"
+            )
+
+            self._btn_login = tk.Button(
+                self._canvas,
+                text="Login",
+                font=FONT_BUTTON,
+                fg="#c0c0c0",
+                compound="center",
+                image=self._img_btn,
+                bd=0,
+                command=self.on_click_login
+            )
+
+            # ====== Entries ======
+            self._entry_IP = tk.Entry(self._canvas, font=('Calibri', 16), fg='#808080')
+            self._entry_IP.insert(0, '127.0.0.1')
+
+            self._entry_Port = tk.Entry(self._canvas, font=('Calibri', 16), fg='#808080')
+            self._entry_Port.insert(0, "8822")
+
+            self._entry_Send = tk.Entry(self._canvas, font=('Calibri', 16), fg='#808080')
+            self._entry_Send.insert(0, "CMD")
+
+            self._entry_Args = tk.Entry(self._canvas, font=('Calibri', 16), fg='#808080')
+            self._entry_Args.insert(0, "...")
+
+            self._text_Received = tk.Text(self._canvas, font=('Calibri', 16), fg='#808080')
+
+            self._canvas.bind("<Configure>", self._redraw_layout)
+            self._root.after(50, self._redraw_layout)
 
 
-        self._canvas.bind("<Configure>", self._draw_grid)
+    def _redraw_layout(self, event=None):
+        self._canvas.delete("all")
 
-        # Add labels, the same as... add text on canvas
-        self._canvas.create_text(250,80,text='Client',font=('Calibri',28),fill='#808080')
-        self._canvas.create_text(50,180,text='IP:',font=FONT_BUTTON,fill='#000000',anchor='w')
-        self._canvas.create_text(50,230,text='Port:',font=FONT_BUTTON,fill='#000000',anchor='w')
-        self._canvas.create_text(50,280,text='Send:',font=FONT_BUTTON,fill='#000000',anchor='w')
-        self._canvas.create_text(50,330,text='Received:',font=FONT_BUTTON,fill='#000000',anchor='w')
+        width = self._canvas.winfo_width()
+        height = self._canvas.winfo_height()
 
-        # Load button image
-        self._img_btn = PhotoImage(file=BTN_IMAGE)
-        img_btn_w = self._img_btn.width()
-        img_btn_h = self._img_btn.height()
+        if width <= 1 or height <= 1:
+            return
 
-        # Button "Connect"
-        self._btn_connect = tk.Button(self._canvas,text="Connect",font=FONT_BUTTON,fg="#c0c0c0",compound="center",
-                                      width=img_btn_w,height=img_btn_h,image=self._img_btn,bd=0,
-                                      command=self.on_click_connect)
-        self._btn_connect.place(x=1350, y=50)
+        self._draw_grid()
 
-        # Button "Disconnect"
-        self._btn_disconnect = tk.Button(self._canvas,text="Disconnect",font=FONT_BUTTON,fg="#c0c0c0",compound="center",
-                                         width=img_btn_w,height=img_btn_h,image=self._img_btn,bd=0,
-                                         command=self.on_click_disconnect,state="disabled")
-        self._btn_disconnect.place(x=1350, y=130)
+        # ====== Main panel ======
+        panel_w = 1200
+        panel_h = 520
 
-        # Button "Send Data"
-        self._btn_send = tk.Button(self._canvas,text="Send Request",font=FONT_BUTTON,fg="#c0c0c0",compound="center",
-                                   width=img_btn_w,height=img_btn_h,image=self._img_btn,bd=0,
-                                   command=self.on_click_send,state="disabled")
-        self._btn_send.place(x=1350, y=210)
+        panel_x1 = (width - panel_w) // 2
+        panel_y1 = (height - panel_h) // 2
+        panel_x2 = panel_x1 + panel_w
+        panel_y2 = panel_y1 + panel_h
 
-        # Button "Login"
-        self._btn_login = tk.Button(self._canvas,text="Login",font=FONT_BUTTON,fg="#c0c0c0",compound="center",
-                                    width=img_btn_w,height=img_btn_h,image=self._img_btn,bd=0,
-                                    command=self.on_click_login)
-        self._btn_login.place(x=1350, y=290)
+        # shadow
+        self._canvas.create_rectangle(
+            panel_x1 + 6, panel_y1 + 6,
+            panel_x2 + 6, panel_y2 + 6,
+            fill="#07070b", outline=""
+        )
 
-        # Create Entry boxes
-        self._entry_IP = tk.Entry(self._canvas,font=('Calibri',16),fg='#808080',width=15)
-        self._entry_IP.insert(0,'127.0.0.1')
-        self._entry_IP.place(x=200,y=168)
+        # panel
+        self._canvas.create_rectangle(
+            panel_x1, panel_y1, panel_x2, panel_y2,
+            fill=self.PANEL, outline=self.BORDER, width=2
+        )
 
-        self._entry_Port = tk.Entry(self._canvas,font=('Calibri',16),fg='#808080',width=15)
-        self._entry_Port.insert(0,"8822")
-        self._entry_Port.place(x=200,y=218)
+        # top neon line
+        self._canvas.create_line(
+            panel_x1, panel_y1, panel_x2, panel_y1,
+            fill=self.CYAN, width=3
+        )
 
-        self._entry_Send = tk.Entry(self._canvas,font=('Calibri',16),fg='#808080',width=15)
-        self._entry_Send.insert(0,"CMD")
-        self._entry_Send.place(x=200,y=268)
+        # title
+        self._canvas.create_text(
+            (panel_x1 + panel_x2) // 2,
+            panel_y1 + 40,
+            text="CLIENT",
+            font=("Calibri", 28, "bold"),
+            fill=self.TEXT
+        )
 
-        self._entry_Args = tk.Entry(self._canvas,font=('Calibri',16),fg='#808080',width=34)
-        self._entry_Args.insert(0,"...")
-        self._entry_Args.place(x=425,y=268)
+        self._canvas.create_text(
+            panel_x1 + 60, panel_y1 + 110,
+            text="IP:",
+            font=FONT_BUTTON,
+            fill=self.CYAN,
+            anchor="w"
+        )
 
-        self._text_Received = tk.Text(self._canvas,font=('Calibri',16),fg='#808080',width=50, height=5)
-        self._text_Received.place(x=200,y=318)
+        self._canvas.create_text(
+            panel_x1 + 60, panel_y1 + 170,
+            text="PORT:",
+            font=FONT_BUTTON,
+            fill=self.CYAN,
+            anchor="w"
+        )
+
+        self._canvas.create_text(
+            panel_x1 + 60, panel_y1 + 230,
+            text="SEND:",
+            font=FONT_BUTTON,
+            fill=self.PURPLE,
+            anchor="w"
+        )
+
+        self._canvas.create_text(
+            panel_x1 + 60, panel_y1 + 300,
+            text="RECEIVED:",
+            font=FONT_BUTTON,
+            fill=self.PURPLE,
+            anchor="w"
+        )
+
+        # entry sizes
+        entry_h = 32
+
+        # entries
+        self._entry_IP.place(
+            x=panel_x1 + 180,
+            y=panel_y1 + 95,
+            width=260,
+            height=entry_h
+        )
+
+        self._entry_Port.place(
+            x=panel_x1 + 180,
+            y=panel_y1 + 155,
+            width=260,
+            height=entry_h
+        )
+
+        self._entry_Send.place(
+            x=panel_x1 + 180,
+            y=panel_y1 + 215,
+            width=260,
+            height=entry_h
+        )
+
+        self._entry_Args.place(
+            x=panel_x1 + 470,
+            y=panel_y1 + 215,
+            width=340,
+            height=entry_h
+        )
+
+        self._text_Received.place(
+            x=panel_x1 + 180,
+            y=panel_y1 + 285,
+            width=630,
+            height=120
+        )
+
+        # buttons
+        self._btn_connect.place(
+            x=panel_x2 - 290,
+            y=panel_y1 + 85
+        )
+
+        self._btn_disconnect.place(
+            x=panel_x2 - 290,
+            y=panel_y1 + 165
+        )
+
+        self._btn_send.place(
+            x=panel_x2 - 290,
+            y=panel_y1 + 245
+        )
+
+        self._btn_login.place(
+            x=panel_x2 - 290,
+            y=panel_y1 + 325
+        )
+
 
     def _draw_grid(self, event=None):
         self._canvas.delete("grid")

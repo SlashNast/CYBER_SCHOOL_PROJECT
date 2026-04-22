@@ -101,41 +101,8 @@ class Mathpdfs:
             bd=0
         )
         self._canvas.pack(fill="both", expand=True)
-        self._canvas.bind("<Configure>", self._draw_grid)
 
-        self.panel_x1, self.panel_y1 = 520, 110
-        self.panel_x2, self.panel_y2 = 1480, 560
-
-        # shadow
-        self._canvas.create_rectangle(
-            self.panel_x1 + 6, self.panel_y1 + 6, self.panel_x2 + 6, self.panel_y2 + 6,
-            fill="#07070b", outline=""
-        )
-        # panel
-        self._canvas.create_rectangle(
-            self.panel_x1, self.panel_y1, self.panel_x2, self.panel_y2,
-            fill=self.PANEL, outline=self.BORDER, width=2
-        )
-        # neon top line
-        self._canvas.create_line(
-            self.panel_x1, self.panel_y1, self.panel_x2, self.panel_y1,
-            fill=self.CYAN, width=3
-        )
-
-        # ====== Title ======
-        self._canvas.create_text(
-            (self.panel_x1 + self.panel_x2) // 2, self.panel_y1 + 40,
-            text="CHOOSE YOUR BAGRUT EXAM",
-            font=("Calibri", 26, "bold"),
-            fill=self.TEXT
-        )
-        self._canvas.create_text(
-            (self.panel_x1 + self.panel_x2) // 2, self.panel_y1 + 70,
-            text="choose your sheelon",
-            font=("Calibri", 14),
-            fill=self.MUTED
-        )
-
+        # ====== Scroll area ======
         self.scroll_canvas = tk.Canvas(
             self._canvas,
             bg=self.PANEL,
@@ -151,31 +118,16 @@ class Mathpdfs:
 
         self.scroll_canvas.configure(yscrollcommand=self.scrollbar.set)
 
-        list_x1 = self.panel_x1 + 40
-        list_y1 = self.panel_y1 + 110
-        list_x2 = self.panel_x2 - 40
-        list_y2 = self.panel_y2 - 60
-
-        list_w = list_x2 - list_x1
-        list_h = list_y2 - list_y1
-
-        # размещаем scroll_canvas поверх твоего большого canvas
-        self.scroll_canvas.place(x=list_x1, y=list_y1, width=list_w, height=list_h)
-        self.scrollbar.place(x=list_x2 + 8, y=list_y1, height=list_h)
-
-        # frame внутри canvas — сюда будем добавлять кнопки
         self.list_frame = tk.Frame(self.scroll_canvas, bg=self.PANEL)
-        self.list_window_id = self.scroll_canvas.create_window((0, 0), window=self.list_frame, anchor="nw")
+        self.list_window_id = self.scroll_canvas.create_window(
+            (0, 0),
+            window=self.list_frame,
+            anchor="nw"
+        )
 
-        # важно: обновлять scrollregion, когда меняется размер контента
         self.list_frame.bind("<Configure>", self._on_list_frame_configure)
         self.scroll_canvas.bind("<Configure>", self._on_scroll_canvas_configure)
-
-        # колесо мыши (чтобы можно было листать)
         self.scroll_canvas.bind_all("<MouseWheel>", self._on_mousewheel)
-
-
-
 
         self.list_frame.grid_columnconfigure(0, weight=1)
         self.list_frame.grid_columnconfigure(1, weight=0)
@@ -189,7 +141,8 @@ class Mathpdfs:
                 row=row,
                 column=0,
                 padx=(10, 8),
-                pady=6
+                pady=6,
+                sticky="ew"
             )
 
             save_btn = self._make_list_saved(
@@ -202,17 +155,6 @@ class Mathpdfs:
                 padx=(0, 10),
                 pady=6
             )
-
-            self._this_wnd.update_idletasks()
-            self.scroll_canvas.configure(scrollregion=self.scroll_canvas.bbox("all"))
-
-
-        self._canvas.create_text(
-            (self.panel_x1 + self.panel_x2) // 2, self.panel_y2 - 28,
-            text="tip: pick a program → then pick a subject",
-            font=("Calibri", 11),
-            fill="#7e8593"
-        )
 
         self._btn_back = tk.Button(
             self._canvas,
@@ -230,11 +172,108 @@ class Mathpdfs:
             command=self.go_back,
             cursor="hand2"
         )
-        self._btn_back.place(x=20, y=20, width=100, height=40)
-
         self._btn_back.bind("<Enter>", lambda e: e.widget.config(bg=self.BTN_HOVER))
         self._btn_back.bind("<Leave>", lambda e: e.widget.config(bg=self.BTN_BG))
 
+        self._canvas.bind("<Configure>", self._redraw_layout)
+        self._this_wnd.after(50, self._redraw_layout)
+
+    def _redraw_layout(self, event=None):
+        if self._canvas is None:
+            return
+
+        self._canvas.delete("all")
+
+        width = self._canvas.winfo_width()
+        height = self._canvas.winfo_height()
+
+        if width <= 1 or height <= 1:
+            return
+
+        self._draw_grid()
+
+        # ====== Main panel ======
+        panel_w = 960
+        panel_h = 450
+
+        self.panel_x1 = (width - panel_w) // 2
+        self.panel_y1 = (height - panel_h) // 2
+        self.panel_x2 = self.panel_x1 + panel_w
+        self.panel_y2 = self.panel_y1 + panel_h
+
+        # shadow
+        self._canvas.create_rectangle(
+            self.panel_x1 + 6, self.panel_y1 + 6,
+            self.panel_x2 + 6, self.panel_y2 + 6,
+            fill="#07070b", outline=""
+        )
+
+        # panel
+        self._canvas.create_rectangle(
+            self.panel_x1, self.panel_y1,
+            self.panel_x2, self.panel_y2,
+            fill=self.PANEL, outline=self.BORDER, width=2
+        )
+
+        # neon line
+        self._canvas.create_line(
+            self.panel_x1, self.panel_y1,
+            self.panel_x2, self.panel_y1,
+            fill=self.CYAN, width=3
+        )
+
+        # title
+        self._canvas.create_text(
+            (self.panel_x1 + self.panel_x2) // 2,
+            self.panel_y1 + 40,
+            text="CHOOSE YOUR BAGRUT EXAM",
+            font=("Calibri", 26, "bold"),
+            fill=self.TEXT
+        )
+
+        self._canvas.create_text(
+            (self.panel_x1 + self.panel_x2) // 2,
+            self.panel_y1 + 70,
+            text="choose your sheelon",
+            font=("Calibri", 14),
+            fill=self.MUTED
+        )
+
+        # list area
+        list_x1 = self.panel_x1 + 40
+        list_y1 = self.panel_y1 + 110
+        list_x2 = self.panel_x2 - 40
+        list_y2 = self.panel_y2 - 60
+
+        list_w = list_x2 - list_x1
+        list_h = list_y2 - list_y1
+
+        self.scroll_canvas.place(
+            x=list_x1,
+            y=list_y1,
+            width=list_w,
+            height=list_h
+        )
+
+        self.scrollbar.place(
+            x=list_x2 + 8,
+            y=list_y1,
+            height=list_h
+        )
+
+        self._btn_back.place(x=20, y=20, width=100, height=40)
+
+        # footer
+        self._canvas.create_text(
+            (self.panel_x1 + self.panel_x2) // 2,
+            self.panel_y2 - 28,
+            text="tip: pick a program → then pick a subject",
+            font=("Calibri", 11),
+            fill="#7e8593"
+        )
+
+        self._this_wnd.update_idletasks()
+        self.scroll_canvas.configure(scrollregion=self.scroll_canvas.bbox("all"))
 
 
     def _make_list_button(self, text, command):
@@ -308,13 +347,13 @@ class Mathpdfs:
         if self._canvas is None:
             return
 
-        self._canvas.delete("grid")
         width = self._canvas.winfo_width()
         height = self._canvas.winfo_height()
         step = 45
 
         for x in range(0, width, step):
             self._canvas.create_line(x, 0, x, height, fill="#2D3458", tags="grid")
+
         for y in range(0, height, step):
             self._canvas.create_line(0, y, width, y, fill="#2D3458", tags="grid")
 

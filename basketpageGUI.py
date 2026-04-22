@@ -45,7 +45,6 @@ class Basket:
     # ================= UI =================
 
     def create_ui(self):
-
         # ====== Window ======
         self._this_wnd.state("zoomed")
         self._this_wnd.resizable(True, True)
@@ -73,10 +72,108 @@ class Basket:
             bd=0
         )
         self._canvas.pack(fill="both", expand=True)
-        self._canvas.bind("<Configure>", self._draw_grid)
 
-        self.panel_x1, self.panel_y1 = 420, 100
-        self.panel_x2, self.panel_y2 = 1580, 620
+        # ===== Scroll area =====
+        self.scroll_canvas = tk.Canvas(
+            self._canvas,
+            bg=self.PANEL,
+            highlightthickness=0,
+            bd=0
+        )
+
+        self.scrollbar = tk.Scrollbar(
+            self._this_wnd,
+            orient="vertical",
+            command=self.scroll_canvas.yview
+        )
+
+        self.scroll_canvas.configure(yscrollcommand=self.scrollbar.set)
+
+        self.list_frame = tk.Frame(self.scroll_canvas, bg=self.PANEL)
+
+        self.list_window_id = self.scroll_canvas.create_window(
+            (0, 0),
+            window=self.list_frame,
+            anchor="nw"
+        )
+
+        self.list_frame.bind("<Configure>", self._on_list_frame_configure)
+        self.scroll_canvas.bind("<Configure>", self._on_scroll_canvas_configure)
+        self.scroll_canvas.bind_all("<MouseWheel>", self._on_mousewheel)
+
+        # ===== Buttons in list =====
+        self.list_frame.grid_columnconfigure(0, weight=1)
+        self.list_frame.grid_columnconfigure(1, weight=0)
+
+        for row, (material_id, title, path_or_link) in enumerate(self.VIDEOS):
+            big_btn = self._make_list_button(
+                title,
+                lambda u=path_or_link: self.on_choose(u)
+            )
+            big_btn.grid(
+                row=row,
+                column=0,
+                padx=(10, 8),
+                pady=6,
+                sticky="ew"
+            )
+
+            save_btn = self._make_list_saved(
+                "REMOVE",
+                lambda m_id=material_id, t=title, u=path_or_link: self.on_remove(m_id, t)
+            )
+            save_btn.grid(
+                row=row,
+                column=1,
+                padx=(0, 10),
+                pady=6
+            )
+
+        self._btn_back = tk.Button(
+            self._canvas,
+            text="BACK",
+            font=("Calibri", 12, "bold"),
+            fg=self.BTN_TEXT,
+            bg=self.BTN_BG,
+            activeforeground=self.BTN_TEXT,
+            activebackground=self.BTN_HOVER,
+            bd=1,
+            relief="solid",
+            highlightthickness=1,
+            highlightbackground=self.BTN_BORDER,
+            highlightcolor=self.BTN_BORDER,
+            command=self.go_back,
+            cursor="hand2"
+        )
+
+        self._btn_back.bind("<Enter>", lambda e: e.widget.config(bg=self.BTN_HOVER))
+        self._btn_back.bind("<Leave>", lambda e: e.widget.config(bg=self.BTN_BG))
+
+        self._canvas.bind("<Configure>", self._redraw_layout)
+        self._this_wnd.after(50, self._redraw_layout)
+
+    def _redraw_layout(self, event=None):
+        if self._canvas is None:
+            return
+
+        self._canvas.delete("all")
+
+        width = self._canvas.winfo_width()
+        height = self._canvas.winfo_height()
+
+        if width <= 1 or height <= 1:
+            return
+
+        self._draw_grid()
+
+        # ====== Main panel ======
+        panel_w = 1160
+        panel_h = 520
+
+        self.panel_x1 = (width - panel_w) // 2
+        self.panel_y1 = (height - panel_h) // 2
+        self.panel_x2 = self.panel_x1 + panel_w
+        self.panel_y2 = self.panel_y1 + panel_h
 
         # shadow
         self._canvas.create_rectangle(
@@ -99,7 +196,7 @@ class Basket:
             fill=self.CYAN, width=3
         )
 
-        # ====== Title ======
+        # title
         self._canvas.create_text(
             (self.panel_x1 + self.panel_x2) // 2,
             self.panel_y1 + 40,
@@ -116,23 +213,7 @@ class Basket:
             fill=self.MUTED
         )
 
-        # ===== Scroll area =====
-
-        self.scroll_canvas = tk.Canvas(
-            self._canvas,
-            bg=self.PANEL,
-            highlightthickness=0,
-            bd=0
-        )
-
-        self.scrollbar = tk.Scrollbar(
-            self._this_wnd,
-            orient="vertical",
-            command=self.scroll_canvas.yview
-        )
-
-        self.scroll_canvas.configure(yscrollcommand=self.scrollbar.set)
-
+        # scroll area
         list_x1 = self.panel_x1 + 40
         list_y1 = self.panel_y1 + 110
         list_x2 = self.panel_x2 - 40
@@ -141,45 +222,18 @@ class Basket:
         list_w = list_x2 - list_x1
         list_h = list_y2 - list_y1
 
-        self.scroll_canvas.place(x=list_x1, y=list_y1, width=list_w, height=list_h)
-        self.scrollbar.place(x=list_x2 + 8, y=list_y1, height=list_h)
-
-        self.list_frame = tk.Frame(self.scroll_canvas, bg=self.PANEL)
-
-        self.list_window_id = self.scroll_canvas.create_window(
-            (0, 0),
-            window=self.list_frame,
-            anchor="nw"
+        self.scroll_canvas.place(
+            x=list_x1,
+            y=list_y1,
+            width=list_w,
+            height=list_h
         )
 
-        self.list_frame.bind("<Configure>", self._on_list_frame_configure)
-        self.scroll_canvas.bind("<Configure>", self._on_scroll_canvas_configure)
-
-        self.scroll_canvas.bind_all("<MouseWheel>", self._on_mousewheel)
-
-        # ===== Buttons =====
-
-        self.list_frame.grid_columnconfigure(0, weight=1)
-        self.list_frame.grid_columnconfigure(1, weight=0)
-
-        for row, (material_id, title, path_or_link) in enumerate(self.VIDEOS):
-            big_btn = self._make_list_button(title, lambda u=path_or_link: self.on_choose(u))
-
-            big_btn.grid(
-                row=row,
-                column=0,
-                padx=(10, 8),
-                pady=6
-            )
-            save_btn = self._make_list_saved("REMOVE",
-                                             lambda m_id=material_id, t=title, u=path_or_link: self.on_remove(m_id, t))
-
-            save_btn.grid(
-                row=row,
-                column=1,
-                padx=(0, 10),
-                pady=6
-            )
+        self.scrollbar.place(
+            x=list_x2 + 8,
+            y=list_y1,
+            height=list_h
+        )
 
         # footer
         self._canvas.create_text(
@@ -190,26 +244,10 @@ class Basket:
             fill="#7e8593"
         )
 
-        self._btn_back = tk.Button(
-            self._canvas,
-            text="BACK",
-            font=("Calibri", 12, "bold"),
-            fg=self.BTN_TEXT,
-            bg=self.BTN_BG,
-            activeforeground=self.BTN_TEXT,
-            activebackground=self.BTN_HOVER,
-            bd=1,
-            relief="solid",
-            highlightthickness=1,
-            highlightbackground=self.BTN_BORDER,
-            highlightcolor=self.BTN_BORDER,
-            command=self.go_back,
-            cursor="hand2"
-        )
-        self._btn_back.place(x= 20, y=20, width=100, height=40)
+        self._btn_back.place(x=20, y=20, width=100, height=40)
 
-        self._btn_back.bind("<Enter>", lambda e: e.widget.config(bg=self.BTN_HOVER))
-        self._btn_back.bind("<Leave>", lambda e: e.widget.config(bg=self.BTN_BG))
+        self._this_wnd.update_idletasks()
+        self.scroll_canvas.configure(scrollregion=self.scroll_canvas.bbox("all"))
 
     # ================= Buttons =================
 
@@ -291,11 +329,8 @@ class Basket:
         if self._canvas is None:
             return
 
-        self._canvas.delete("grid")
-
         width = self._canvas.winfo_width()
         height = self._canvas.winfo_height()
-
         step = 45
 
         for x in range(0, width, step):
@@ -313,7 +348,6 @@ class Basket:
             )
 
         self._canvas.tag_lower("grid")
-
     # ================= Window helpers =================
 
     def show_modal(self):

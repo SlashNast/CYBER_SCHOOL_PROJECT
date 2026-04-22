@@ -1,8 +1,8 @@
 #mainpage
-from BagrutMathPDF import Mathpdfs
-from BagrutPhysPDF import Physpdfs
+from BagrutMathPDFGUI import Mathpdfs
+from BagrutPhysPDFGUI import Physpdfs
 from MathVideos import MathVideos
-from basketpage import Basket
+from basketpageGUI import Basket
 from aichat_pageGUI import AIChatPage
 import tkinter as tk
 from tkinter import messagebox
@@ -27,6 +27,7 @@ class SecondPageGUI:
 
         # чтобы под-опции не наслаивались
         self._sub_buttons = []
+        self._current_submenu = None
 
         self.create_ui()
 
@@ -59,73 +60,108 @@ class SecondPageGUI:
             bd=0
         )
         self._canvas.pack(fill="both", expand=True)
-        self._canvas.bind("<Configure>", self._draw_grid)
+
+        # ====== Main buttons ======
+        self._btn_CHATAI = self._make_button("AI chat", command=self.open_chat_AI_page)
+        self._btn_bagrut = self._make_button("BAGRUT PREP", lambda: self.on_choose("bagrut"))
+        self._btn_school = self._make_button("SCHOOL HELP", lambda: self.on_choose("school"))
+        self._btn_favorites = self._make_button("FAVORITES", command=self.favorites)
+
+        self._canvas.bind("<Configure>", self._redraw_layout)
+        self._this_wnd.after(50, self._redraw_layout)
+
+
+    def _redraw_layout(self, event=None):
+        if self._canvas is None:
+            return
+
+        self._canvas.delete("all")
+
+        width = self._canvas.winfo_width()
+        height = self._canvas.winfo_height()
+
+        if width <= 1 or height <= 1:
+            return
+
+        self._draw_grid()
 
         # ====== Main panel ======
-        self.panel_x1, self.panel_y1 = 520, 110
-        self.panel_x2, self.panel_y2 = 1480, 560
+        panel_w = 960
+        panel_h = 450
+
+        self.panel_x1 = (width - panel_w) // 2
+        self.panel_y1 = (height - panel_h) // 2
+        self.panel_x2 = self.panel_x1 + panel_w
+        self.panel_y2 = self.panel_y1 + panel_h
 
         # shadow
         self._canvas.create_rectangle(
-            self.panel_x1 + 6, self.panel_y1 + 6, self.panel_x2 + 6, self.panel_y2 + 6,
+            self.panel_x1 + 6, self.panel_y1 + 6,
+            self.panel_x2 + 6, self.panel_y2 + 6,
             fill="#07070b", outline=""
         )
+
         # panel
         self._canvas.create_rectangle(
-            self.panel_x1, self.panel_y1, self.panel_x2, self.panel_y2,
+            self.panel_x1, self.panel_y1,
+            self.panel_x2, self.panel_y2,
             fill=self.PANEL, outline=self.BORDER, width=2
         )
+
         # neon top line
         self._canvas.create_line(
-            self.panel_x1, self.panel_y1, self.panel_x2, self.panel_y1,
+            self.panel_x1, self.panel_y1,
+            self.panel_x2, self.panel_y1,
             fill=self.CYAN, width=3
         )
 
         # ====== Title ======
         self._canvas.create_text(
-            (self.panel_x1 + self.panel_x2) // 2, self.panel_y1 + 40,
+            (self.panel_x1 + self.panel_x2) // 2,
+            self.panel_y1 + 40,
             text="ONLINE LIBRARY",
             font=("Calibri", 26, "bold"),
             fill=self.TEXT
         )
 
-
         self._canvas.create_text(
-            (self.panel_x1 + self.panel_x2) // 2, self.panel_y1 + 100,
+            (self.panel_x1 + self.panel_x2) // 2,
+            self.panel_y1 + 100,
             text=f"Hi!! {self.username} choose your learning program",
             font=("Calibri", 16),
             fill=self.MUTED
         )
 
-        # ====== Main buttons (4) ======
-        btn_y = self.panel_y1 + 120
+        # ====== Main buttons ======
+        btn_y = self.panel_y1 + 140
         btn_w, btn_h = 240, 52
         gap = 35
 
         total_w = btn_w * 3 + gap * 2
         start_x = (self.panel_x1 + self.panel_x2 - total_w) // 2
 
-        self._btn_CHATAI = self._make_button("AI chat",  command=self.open_chat_AI_page)
-        self._btn_CHATAI.place(x= start_x + 2*(btn_w + gap), y=btn_y, width=btn_w, height=btn_h)
-
-        self._btn_bagrut = self._make_button("BAGRUT PREP", lambda: self.on_choose("bagrut"))
         self._btn_bagrut.place(x=start_x, y=btn_y, width=btn_w, height=btn_h)
-
-        self._btn_school = self._make_button("SCHOOL HELP", lambda: self.on_choose("school"))
         self._btn_school.place(x=start_x + btn_w + gap, y=btn_y, width=btn_w, height=btn_h)
+        self._btn_CHATAI.place(x=start_x + 2 * (btn_w + gap), y=btn_y, width=btn_w, height=btn_h)
 
-        self._btn_favorites= self._make_button("FAVORITES", command=self.favorites)
-        self._btn_favorites.place(x=start_x + btn_w + gap, y=btn_y+200, width=btn_w, height=btn_h)
-
-
+        self._btn_favorites.place(
+            x=(self.panel_x1 + self.panel_x2) // 2 - btn_w // 2,
+            y=btn_y + 200,
+            width=btn_w,
+            height=btn_h
+        )
 
         # footer
         self._canvas.create_text(
-            (self.panel_x1 + self.panel_x2) // 2, self.panel_y2 - 28,
+            (self.panel_x1 + self.panel_x2) // 2,
+            self.panel_y2 - 28,
             text="tip: pick a program → then pick a subject",
             font=("Calibri", 11),
             fill="#7e8593"
         )
+
+        # если были открыты под-кнопки — перерисовать их после resize
+        self._rebuild_submenu_if_needed()
 
     def _make_button(self, text, command):
         btn = tk.Button(
@@ -162,6 +198,16 @@ class SecondPageGUI:
                 pass
         self._sub_buttons.clear()
 
+    def _rebuild_submenu_if_needed(self):
+        if self._current_submenu == "school":
+            self.show_school_options()
+        elif self._current_submenu == "bagrut":
+            self.show_bagrut_options()
+        elif self._current_submenu == "bagrutmath":
+            self.show_bagrut_math_options()
+        elif self._current_submenu == "bagrutphys":
+            self.show_bagrut_phys_options()
+
     # ================= Logic =================
     def on_choose(self, program_type: str):
         if program_type == "school":
@@ -182,11 +228,11 @@ class SecondPageGUI:
 
     # ================= Submenus =================
 
-
     def show_school_options(self):
+        self._current_submenu = "school"
         self._clear_sub_buttons()
 
-        base_x = (self.panel_x1 + self.panel_x2) // 2 - 90  # центр (под school)
+        base_x = (self.panel_x1 + self.panel_x2) // 2 - 90
         base_y = self.panel_y1 + 200
 
         self._make_sub_button("MATH", base_x, base_y)
@@ -196,7 +242,9 @@ class SecondPageGUI:
 
 
     def show_bagrut_options(self):
+        self._current_submenu = "bagrut"
         self._clear_sub_buttons()
+
 
         base_x = self.panel_x1 + 140  # слева (под bagrut)
         base_y = self.panel_y1 + 200
@@ -208,6 +256,7 @@ class SecondPageGUI:
 
 
     def show_bagrut_math_options(self):
+        self._current_submenu = "bagrutmath"
         self._clear_sub_buttons()
 
         base_x = self.panel_x1 + 140
@@ -220,6 +269,7 @@ class SecondPageGUI:
 
 
     def show_bagrut_phys_options(self):
+        self._current_submenu = "bagrutphys"
         self._clear_sub_buttons()
 
         base_x = self.panel_x1 + 140
@@ -301,13 +351,13 @@ class SecondPageGUI:
         if self._canvas is None:
             return
 
-        self._canvas.delete("grid")
         width = self._canvas.winfo_width()
         height = self._canvas.winfo_height()
         step = 45
 
         for x in range(0, width, step):
             self._canvas.create_line(x, 0, x, height, fill="#2D3458", tags="grid")
+
         for y in range(0, height, step):
             self._canvas.create_line(0, y, width, y, fill="#2D3458", tags="grid")
 

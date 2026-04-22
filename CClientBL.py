@@ -1,3 +1,4 @@
+#ClientBL
 from protocol import *
 from crypto_utils import load_public_key
 from crypto_utils import generate_aes_key
@@ -23,18 +24,9 @@ class CClientBL:
             self._client_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
             self._client_socket.connect((self._host,self._port))
             # 1. получить публичный ключ сервера
-            public_pem = self._client_socket.recv(4096)
-            server_public_key = load_public_key(public_pem)
-
             # 2. сгенерировать AES-ключ
-            self._aes_key = generate_aes_key()
-
             # 3. зашифровать AES-ключ публичным ключом сервера
-            encrypted_key = rsa_encrypt(self._aes_key, server_public_key)
-
             # 4. отправить серверу зашифрованный AES-ключ
-            self._client_socket.send(encrypted_key)
-
             write_to_log("[CLIENT_BL] connected to server")
 
             public_pem = self._client_socket.recv(4096)
@@ -85,8 +77,14 @@ class CClientBL:
             decrypted_response = aes_decrypt(self._aes_key, encrypted_response)
             msg = decrypted_response.decode(FORMAT)
 
+            if len(msg)>4 and msg[:4].isdigit():
+                msg_len=int(msg[:4])
+                msg= msg[4:(4+msg_len)]
+
+
             write_to_log(f"[CLIENT_BL] received decrypted {self._client_socket.getsockname()} {msg}")
             return msg
+
         except Exception as e:
             write_to_log("[CLIENT_BL] Exception on receive: {}".format(e))
             return ""
