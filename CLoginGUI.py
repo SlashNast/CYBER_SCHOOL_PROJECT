@@ -1,5 +1,5 @@
 #login page
-from mainpageGUI import SecondPageGUI
+from BmainpageGUI import SecondPageGUI
 
 
 import tkinter as tk

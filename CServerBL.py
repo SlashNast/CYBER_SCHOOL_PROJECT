@@ -111,11 +111,9 @@ class CClientHandler(threading.Thread):
                 break
 
             try:
-                # 1. расшифровываем AES
                 decrypted_data = aes_decrypt(self._aes_key, encrypted_data)
                 buf = decrypted_data.decode(FORMAT)
 
-                # убираем 4-символьный заголовок длины
                 if len(buf) >= 4 and buf[:4].isdigit():
                     msg_len = int(buf[:4])
                     buf = buf[4:4 + msg_len]

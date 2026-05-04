@@ -1,7 +1,7 @@
 #clientgui
 import tkinter as tk
 from tkinter import *
-from mainpageGUI import  SecondPageGUI
+from BmainpageGUI import  SecondPageGUI
 
 from CClientBL import *
 from CLoginGUI import *
