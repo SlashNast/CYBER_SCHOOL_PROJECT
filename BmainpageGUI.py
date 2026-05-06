@@ -30,6 +30,7 @@ class SecondPageGUI:
         # чтобы под-опции не наслаивались
         self._sub_buttons = []
         self._current_submenu = None
+        self.submenu_visible = False
 
         self.create_ui()
 
@@ -65,12 +66,12 @@ class SecondPageGUI:
 
         # ====== Main buttons ======
         self._btn_CHATAI = self._make_button("AI chat", command=self.open_chat_AI_page)
-        self._btn_bagrut = self._make_button("BAGRUT PREP", lambda: self.on_choose("bagrut"))
-        self._btn_school = self._make_button("SCHOOL HELP", lambda: self.on_choose("school"))
+        self._btn_bagrut = self._make_button("BAGRUT PREP", lambda: self.toggle_submenu("bagrut"))
+        #self._btn_school = self._make_button("SCHOOL HELP", lambda: self.on_choose("school"))
         self._btn_favorites = self._make_button("FAVORITES", command=self.favorites)
 
         self._canvas.bind("<Configure>", self._redraw_layout)
-        self._this_wnd.after(50, self._redraw_layout)
+        self._this_wnd.after(50, self._redraw_layout, None)
 
 
     def _redraw_layout(self, event=None):
@@ -143,7 +144,7 @@ class SecondPageGUI:
         start_x = (self.panel_x1 + self.panel_x2 - total_w) // 2
 
         self._btn_bagrut.place(x=start_x, y=btn_y, width=btn_w, height=btn_h)
-        self._btn_school.place(x=start_x + btn_w + gap, y=btn_y, width=btn_w, height=btn_h)
+        #self._btn_school.place(x=start_x + btn_w + gap, y=btn_y, width=btn_w, height=btn_h)
         self._btn_CHATAI.place(x=start_x + 2 * (btn_w + gap), y=btn_y, width=btn_w, height=btn_h)
 
         self._btn_favorites.place(
@@ -207,21 +208,36 @@ class SecondPageGUI:
 
 
     def _rebuild_submenu_if_needed(self):
-        if self._current_submenu == "school":
-            self.show_school_options()
-        elif self._current_submenu == "bagrut":
+        #if self._current_submenu == "school":
+            #self.show_school_options()
+        if self._current_submenu == "bagrut":
             self.show_bagrut_options()
         elif self._current_submenu == "bagrutmath":
             self.show_bagrut_math_options()
         elif self._current_submenu == "bagrutphys":
             self.show_bagrut_phys_options()
+        elif self._current_submenu == "bagruteng":
+            self.show_bagrut_eng_options()
 
     # ================= Logic =================
     def on_choose(self, program_type: str):
-        if program_type == "school":
-            self.show_school_options()
-        elif program_type == "bagrut":
+        #if program_type == "school":
+            #self.show_school_options()
+        if program_type == "bagrut":
             self.show_bagrut_options()
+
+    def hide_submenu(self):
+        for btn in self._sub_buttons:
+            btn.destroy()
+        self._sub_buttons = []
+
+    def toggle_submenu(self, program_type: str):
+        if self.submenu_visible:
+            self.hide_submenu()
+        else:
+            self.on_choose(program_type)
+
+        self.submenu_visible = not self.submenu_visible
 
 
 
@@ -239,16 +255,16 @@ class SecondPageGUI:
 
     # ================= Submenus =================
 
-    def show_school_options(self):
-        self._current_submenu = "school"
-        self._clear_sub_buttons()
-
-        base_x = (self.panel_x1 + self.panel_x2) // 2 - 90
-        base_y = self.panel_y1 + 200
-
-        self._make_sub_button("MATH", base_x, base_y)
-        self._make_sub_button("HEBREW", base_x, base_y + 55)
-        self._make_sub_button("ENGLISH", base_x, base_y + 110)
+    # def show_school_options(self):
+    #     self._current_submenu = "school"
+    #     self._clear_sub_buttons()
+    #
+    #     base_x = (self.panel_x1 + self.panel_x2) // 2 - 90
+    #     base_y = self.panel_y1 + 200
+    #
+    #     self._make_sub_button("MATH", base_x, base_y)
+    #     self._make_sub_button("HEBREW", base_x, base_y + 55)
+    #     self._make_sub_button("ENGLISH", base_x, base_y + 110)
 
 
 
