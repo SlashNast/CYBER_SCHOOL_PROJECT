@@ -21,14 +21,14 @@ class Engpdfs:
 
         self.PDFENG_DIR = os.path.join(self._get_project_root(), "pdfsBAGRUTENG")
         self.PDFS = [
-            (25, "16381, S25", "summer2025, שאלון-16381A.pdf"),
-            (26, "16381, S25, answers", "summer2025, פתרון-16381A.pdf"),
-            (27, "16382, S25", "summer2025, שאלון-16382C.pdf"),
-            (28, "16381, S25, answers", "summer2025, פתרון-16381C.pdf"),
-            (29, "16582, S25", "summer2025, שאלון-16582G.pdf"),
-            (30, "16381, S25, answers", "summer2025, פתרון-16381G.pdf"),
-            (31, "16471, S25", "summer2025, 16471-שאלוןE.pdf"),
-            (32, "16381, S25, answers", "summer2025, פתרון-16381E.pdf"),
+            (30, "16381, S25", "summer2025, שאלון-16381A.pdf"),
+            (31, "16381, S25, answers", "summer2025, פתרון-16381A.pdf"),
+            (32, "16382, S25", "summer2025, שאלון-16382C.pdf"),
+            (33, "16382, S25, answers", "summer2025, פתרון-16381C.pdf"),
+            (34, "16582, S25", "summer2025, שאלון-16582G.pdf"),
+            (35, "16582, S25, answers", "summer2025, פתרון-16381G.pdf"),
+            (36, "16471, S25", "summer2025, 16471-שאלוןE.pdf"),
+            (37, "16471, S25, answers", "summer2025, פתרון-16381E.pdf"),
 
         ]
 

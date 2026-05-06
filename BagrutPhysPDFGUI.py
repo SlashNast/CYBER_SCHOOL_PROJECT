@@ -21,10 +21,14 @@ class Physpdfs:
 
         self.PDFPHYS_DIR = os.path.join(self._get_project_root(), "pdfsBAGRUTPHYS")
         self.PDFS = [
-            (21, "36282, S25", "summer2025, שאלון,36282.pdf"),
-            (22, "35361, S25", "summer2025, שאלון,36361.pdf"),
-            (23, "35371, S25", "summer2025, שאלון,36371.pdf"),
-            (24, "35382, S25", "summer2025, שאלון,36382.pdf"),
+            (22, "36282, S25", "summer2025, שאלון,36282.pdf"),
+            (23, "36282, S25, answers", "summer2025, פתרון,36282.pdf"),
+            (24, "35361, S25", "summer2025, שאלון,36361.pdf"),
+            (25, "35361, S25, answers", "summer2025, פתרון,36361.pdf"),
+            (26, "35371, S25", "summer2025, שאלון,36371.pdf"),
+            (27, "35371, S25, answers", "summer2025, פתרון,36371.pdf"),
+            (28, "35382, S25", "summer2025, שאלון,36382.pdf"),
+            (29, "35382, S25, answers", "summer2025, פתרון,36382.pdf"),
 
         ]
 
