@@ -24,7 +24,7 @@ class Mathpdfs:
             (1, "35571, H26", "horef2026 , שאלון-35571.pdf"),
             (2, "35571, H26, answers", "horef2026, פתרון,35571.pdf"),
             (3, "35572, H26", "horef2026 , שאלון-35572.pdf"),
-            (4, "35372, H26, answers", "horef2026, פתרון,35572.pdf"),
+            (4, "35572, H26, answers", "horef2026, פתרון,35572.pdf"),
             (5, "35581, H26", "horef2026 , שאלון-35581.pdf"),
             (6, "35581, H26, answers", "horef2026, פתרון,35581.pdf"),
             (7, "35582, H26", "horef2026, שאלון- 35582.pdf"),
@@ -44,9 +44,15 @@ class Mathpdfs:
             (21, "35382, H26", "horef2026, שאלון-35382.pdf"),
         ]
 
+        self.filtered_pdfs = self.PDFS.copy()
+        self._sub_buttons = []
+        self._current_submenu = None
+        self.submenu_visible = False
+        self.selected_yahidot = None
+        self.selected_grade = None
+
         self.create_ui()
-        #self._create_scroll_area()
-        #self._fill_buttons()
+
 
     def _get_project_root(self):
         return os.path.dirname(os.path.abspath(__file__))
@@ -141,29 +147,6 @@ class Mathpdfs:
         self.list_frame.grid_columnconfigure(0, weight=1)
         self.list_frame.grid_columnconfigure(1, weight=0)
 
-        for row, (material_id, title, filename) in enumerate(self.PDFS):
-            big_btn = self._make_list_button(
-                title,
-                lambda f=filename: self.on_choose(f)
-            )
-            big_btn.grid(
-                row=row,
-                column=0,
-                padx=(10, 8),
-                pady=6,
-                sticky="ew"
-            )
-
-            save_btn = self._make_list_saved(
-                "SAVE",
-                lambda m_id=material_id, t=title: self.on_save(m_id, t)
-            )
-            save_btn.grid(
-                row=row,
-                column=1,
-                padx=(0, 10),
-                pady=6
-            )
 
         self._btn_back = tk.Button(
             self._canvas,
@@ -185,7 +168,40 @@ class Mathpdfs:
         self._btn_back.bind("<Leave>", lambda e: e.widget.config(bg=self.BTN_BG))
 
         self._canvas.bind("<Configure>", self._redraw_layout)
-        self._this_wnd.after(50, self._redraw_layout)
+        self._this_wnd.after(50, self._redraw_layout, None)
+        self._this_wnd.after(100, self.render_pdfs)
+
+
+        self.filterbtn = self._make_button(
+            "choose filter",
+            lambda: self.toggle_submenu("filter")
+        )
+
+        self.clear_filterbtn = self._make_button(
+            "X",
+            lambda: self.clear_filters()
+        )
+
+    def render_pdfs(self):
+        # очищаем экран
+        for widget in self.list_frame.winfo_children():
+            widget.destroy()
+
+        # рисуем текущий список
+        for row, (material_id, title, filename) in enumerate(self.filtered_pdfs):
+            big_btn = self._make_list_button(
+                title,
+                lambda f=filename: self.on_choose(f)
+            )
+            big_btn.grid(row=row, column=0, padx=(10, 8), pady=6, sticky="ew")
+
+            save_btn = self._make_list_saved(
+                "SAVE",
+                lambda m_id=material_id, t=title: self.on_save(m_id, t)
+            )
+            save_btn.grid(row=row, column=1, padx=(0, 10), pady=6)
+
+
 
     def _redraw_layout(self, event=None):
         if self._canvas is None:
@@ -281,8 +297,160 @@ class Mathpdfs:
             fill="#7e8593"
         )
 
+        self.filterbtn.place(
+            x=(self.panel_x1 + self.panel_x2) // 2 - 450,
+            y=self.panel_y1 + 20
+        )
+
+        self.clear_filterbtn.place(
+            x=(self.panel_x1 + self.panel_x2) // 2 - 250 ,
+            y=self.panel_y1 + 20, width = 25
+        )
+
         self._this_wnd.update_idletasks()
         self.scroll_canvas.configure(scrollregion=self.scroll_canvas.bbox("all"))
+
+
+    def _make_button(self, text, command):
+        btn = tk.Button(
+            self._canvas,
+            text=text,
+            font=("Calibri", 14, "bold"),
+            fg=self.BTN_TEXT,
+            bg=self.BTN_BG,
+            activeforeground=self.BTN_TEXT,
+            activebackground=self.BTN_HOVER,
+            bd=1,
+            relief="solid",
+            highlightthickness=1,
+            highlightbackground=self.BTN_BORDER,
+            highlightcolor=self.BTN_BORDER,
+            command=command,
+            cursor="hand2",
+            width = 17
+        )
+        btn.bind("<Enter>", lambda e: e.widget.config(bg=self.BTN_HOVER))
+        btn.bind("<Leave>", lambda e: e.widget.config(bg=self.BTN_BG))
+        return btn
+
+
+    def _make_sub_button(self, text, y, command=None, w=180, h=30):
+        b = self._make_button(text, command if command else (lambda: None))
+        b.place(x = (self.panel_x1 + self.panel_x2) // 2 - 450, y = y , width=w, height=h)
+        self._sub_buttons.append(b)
+
+    def _clear_sub_buttons(self):
+        for b in self._sub_buttons:
+            try:
+                b.destroy()
+            except:
+                pass
+        self._sub_buttons.clear()
+
+
+
+    def show_filter_options(self):
+        self._current_submenu = "bagrut"
+        self._clear_sub_buttons()
+
+        x = (self.panel_x1 + self.panel_x2) // 2 - 100
+        y = (self.panel_y1 + 40)
+
+
+        self._make_sub_button("BY GRADE", y + 30, command=lambda: self.on_choose_filters("grade"))
+        self._make_sub_button("BY YAHIDOT", y + 60,  command=lambda: self.on_choose_filters("yahidot"))
+
+    def show_yahidot_filter_options(self):
+        self._current_submenu = "yahidot"
+        self._clear_sub_buttons()
+
+        x = (self.panel_x1 + self.panel_x2) // 2 - 100
+        y = (self.panel_y1 + 40)
+
+        self._make_sub_button("3",  y + 30, command=lambda: self.set_yahidot(3))
+        self._make_sub_button("4",  y + 60, command=lambda: self.set_yahidot(4))
+        self._make_sub_button("5",  y + 90, command=lambda: self.set_yahidot(5))
+
+
+    def show_grade_filter_options(self):
+        self._current_submenu = "grade"
+        self._clear_sub_buttons()
+
+        x = (self.panel_x1 + self.panel_x2) // 2 - 100
+        y = (self.panel_y1 + 40)
+
+        self._make_sub_button("11 grade",  y + 30, command=lambda: self.set_grade(11))
+        self._make_sub_button("12 grade",  y + 60, command=lambda: self.set_grade(12))
+
+
+    def apply_filters(self):
+        self.filtered_pdfs = []
+
+        for pdf in self.PDFS:
+            title = pdf[1]
+            filename = pdf[2]
+
+            # фильтр по yahidot
+            if self.selected_yahidot:
+                if self.selected_yahidot == 3 and title[2] != "3":
+                    continue
+                if self.selected_yahidot == 4 and title[2] != "4":
+                    continue
+                if self.selected_yahidot == 5 and title[2] != "5":
+                    continue
+
+            # фильтр по grade
+            if self.selected_grade:
+                if self.selected_grade == 11 and title[4] != "1":
+                    continue
+                if self.selected_grade == 12 and title[4] != "2":
+                    continue
+
+            self.filtered_pdfs.append(pdf)
+
+        self.render_pdfs()
+
+    def set_yahidot(self, value):
+        self.selected_yahidot = value
+        self.apply_filters()
+
+    def set_grade(self, value):
+        self.selected_grade = value
+        self.apply_filters()
+
+
+
+    def on_choose_filters(self, program_type: str):
+        if program_type == "filter":
+            self.show_filter_options()
+        elif program_type == "yahidot":
+            self.show_yahidot_filter_options()
+        elif program_type == "grade":
+            self.show_grade_filter_options()
+
+
+    def hide_submenu(self):
+        for btn in self._sub_buttons:
+            btn.destroy()
+        self._sub_buttons = []
+
+    def toggle_submenu(self, program_type: str):
+        if self.submenu_visible:
+            self.hide_submenu()
+        else:
+            self.on_choose_filters(program_type)
+
+        self.submenu_visible = not self.submenu_visible
+
+
+    def clear_filters(self):
+        self.selected_yahidot = None
+        self.selected_grade = None
+
+        self.filtered_pdfs = self.PDFS.copy()
+        self.render_pdfs()
+
+
 
 
     def _make_list_button(self, text, command):

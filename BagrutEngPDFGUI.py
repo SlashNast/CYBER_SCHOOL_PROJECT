@@ -40,8 +40,7 @@ class Engpdfs:
         self.selected_grade = None
 
         self.create_ui()
-        #self._create_scroll_area()
-        #self._fill_buttons()
+
 
     def _get_project_root(self):
         return os.path.dirname(os.path.abspath(__file__))
@@ -160,12 +159,21 @@ class Engpdfs:
         self._btn_back.bind("<Enter>", lambda e: e.widget.config(bg=self.BTN_HOVER))
         self._btn_back.bind("<Leave>", lambda e: e.widget.config(bg=self.BTN_BG))
 
-        self._canvas.bind("<Configure>", self._redraw_layout)
-        self._this_wnd.after(50, self._redraw_layout, None)
 
         self._canvas.bind("<Configure>", self._redraw_layout)
         self._this_wnd.after(50, self._redraw_layout, None)
         self._this_wnd.after(100, self.render_pdfs)
+
+        self.filterbtn = self._make_button(
+            "choose filter",
+            lambda: self.toggle_submenu("filter")
+        )
+
+        self.clear_filterbtn = self._make_button(
+            "X",
+            lambda: self.clear_filters()
+        )
+
 
     def render_pdfs(self):
         # очищаем экран
@@ -249,10 +257,6 @@ class Engpdfs:
             fill=self.MUTED
         )
 
-        self.filterbtn = self._make_button("choose filter", lambda: self.toggle_submenu("filter"))
-
-        self.filterbtn.place(x = (self.panel_x1 + self.panel_x2) // 2 - 450, y = self.panel_y1 + 20 )
-
         # list area
         list_x1 = self.panel_x1 + 40
         list_y1 = self.panel_y1 + 110
@@ -286,6 +290,16 @@ class Engpdfs:
 
         self._btn_back.place(x=20, y=20, width=100, height=40)
 
+        self.filterbtn.place(
+            x=(self.panel_x1 + self.panel_x2) // 2 - 450,
+            y=self.panel_y1 + 20
+        )
+
+        self.clear_filterbtn.place(
+            x=(self.panel_x1 + self.panel_x2) // 2 - 250,
+            y=self.panel_y1 + 20, width=25
+        )
+
         self._this_wnd.update_idletasks()
         self.scroll_canvas.configure(scrollregion=self.scroll_canvas.bbox("all"))
 
@@ -314,7 +328,7 @@ class Engpdfs:
         btn.bind("<Leave>", lambda e: e.widget.config(bg=self.BTN_BG))
         return btn
 
-    def _make_sub_button(self, text, x, y, command=None, w=180, h=30):
+    def _make_sub_button(self, text, y, command=None, w=180, h=30):
         b = self._make_button(text, command if command else (lambda: None))
         b.place(x = (self.panel_x1 + self.panel_x2) // 2 - 450, y = y , width=w, height=h)
         self._sub_buttons.append(b)
@@ -335,9 +349,8 @@ class Engpdfs:
         y = (self.panel_y1 + 40)
 
 
-        self._make_sub_button("BY GRADE", x, y + 30, command=lambda: self.on_choose_filters("grade"))
-        self._make_sub_button("BY YEAR", x, y + 60) #command=lambda: self.on_choose_bagrut("bagrutphys"))
-        self._make_sub_button("BY YAHIDOT", x, y + 90,  command=lambda: self.on_choose_filters("yahidot"))
+        self._make_sub_button("BY GRADE", y + 30, command=lambda: self.on_choose_filters("grade"))
+        self._make_sub_button("BY YAHIDOT", y + 60,  command=lambda: self.on_choose_filters("yahidot"))
 
     def show_yahidot_filter_options(self):
         self._current_submenu = "yahidot"
@@ -346,10 +359,9 @@ class Engpdfs:
         x = (self.panel_x1 + self.panel_x2) // 2 - 100
         y = (self.panel_y1 + 40)
 
-
-        self._make_sub_button("3", x, y + 30, command=lambda: self.set_yahidot(3))
-        self._make_sub_button("4", x, y + 60, command=lambda: self.set_yahidot(4))
-        self._make_sub_button("5", x, y + 90, command=lambda: self.set_yahidot(5))
+        self._make_sub_button("3",  y + 30, command=lambda: self.set_yahidot(3))
+        self._make_sub_button("4",  y + 60, command=lambda: self.set_yahidot(4))
+        self._make_sub_button("5",  y + 90, command=lambda: self.set_yahidot(5))
 
     def show_grade_filter_options(self):
         self._current_submenu = "grade"
@@ -358,36 +370,41 @@ class Engpdfs:
         x = (self.panel_x1 + self.panel_x2) // 2 - 100
         y = (self.panel_y1 + 40)
 
+        self._make_sub_button("11 grade",  y + 30, command=lambda: self.set_grade(11))
+        self._make_sub_button("12 grade",  y + 60, command=lambda: self.set_grade(12))
 
-        self._make_sub_button("11 grade", x, y + 30, command=lambda: self.set_grade(11))
-        self._make_sub_button("12 grade", x, y + 60, command=lambda: self.set_grade(12))
+
+    YAHIDOT_FILTERS = {
+        3: ("A", "C"),
+        4: ("C", "E"),
+        5: ("E", "G")
+    }
+
+    GRADE_FILTERS = {
+        11: ("A", "C", "E"),
+        12: ("C", "E", "G")
+    }
+
+
 
     def apply_filters(self):
-        self.filtered_pdfs = []
+            yahidot_letters = self.YAHIDOT_FILTERS.get(self.selected_yahidot)
+            grade_letters = self.GRADE_FILTERS.get(self.selected_grade)
 
-        for pdf in self.PDFS:
-            title = pdf[1]
-            filename = pdf[2]
+            self.filtered_pdfs = []
 
-            # фильтр по yahidot
-            if self.selected_yahidot:
-                if self.selected_yahidot == 3 and not any(l in filename for l in ("A", "C")):
-                    continue
-                if self.selected_yahidot == 4 and not any(l in filename for l in ("C", "E")):
-                    continue
-                if self.selected_yahidot == 5 and not any(l in filename for l in ("E", "G")):
+            for pdf in self.PDFS:
+                filename = pdf[2]
+
+                if yahidot_letters and not any(letter in filename for letter in yahidot_letters):
                     continue
 
-            # фильтр по grade
-            if self.selected_grade:
-                if self.selected_grade == 11 and not any(l in filename for l in ("A", "C", "E")):
-                    continue
-                if self.selected_grade == 12 and not any(l in filename for l in ("C", "E", "G")):
+                if grade_letters and not any(letter in filename for letter in grade_letters):
                     continue
 
-            self.filtered_pdfs.append(pdf)
+                self.filtered_pdfs.append(pdf)
 
-        self.render_pdfs()
+            self.render_pdfs()
 
     def set_yahidot(self, value):
         self.selected_yahidot = value
@@ -397,18 +414,6 @@ class Engpdfs:
         self.selected_grade = value
         self.apply_filters()
 
-
-
-
-
-    def _rebuild_submenu_if_needed(self):
-
-        if self._current_submenu == "filter":
-            self.show_filter_options()
-        elif self._current_submenu == "yahidot":
-            self.show_yahidot_filter_options()
-        elif self._current_submenu == "grade":
-            self.show_grade_filter_options()
 
 
     def on_choose_filters(self, program_type: str):
@@ -432,6 +437,13 @@ class Engpdfs:
             self.on_choose_filters(program_type)
 
         self.submenu_visible = not self.submenu_visible
+
+    def clear_filters(self):
+        self.selected_yahidot = None
+        self.selected_grade = None
+
+        self.filtered_pdfs = self.PDFS.copy()
+        self.render_pdfs()
 
 
 
