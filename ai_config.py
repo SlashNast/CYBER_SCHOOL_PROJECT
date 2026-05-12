@@ -1,2 +1,2 @@
-#PASSWORD
+#ai_config.py
 DEEPSEEK_API_KEY= "sk-c11382762293466ea383d847dafbc135"

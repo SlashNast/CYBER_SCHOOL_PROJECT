@@ -2,7 +2,7 @@
 from BagrutMathPDFGUI import Mathpdfs
 from BagrutPhysPDFGUI import Physpdfs
 from BagrutEngPDFGUI import Engpdfs
-from BMathVideos import MathVideos
+from BListNotesGUI import ListNotes
 from basketpageGUI import Basket
 from aichat_pageGUI import AIChatPage
 import tkinter as tk
@@ -15,7 +15,7 @@ class SecondPageGUI:
         self._parent_wnd = parent_wnd
         self._this_wnd = tk.Toplevel(parent_wnd) if parent_wnd else tk.Tk()
         self.username = username
-        self.id_of_user = user_id
+        self.user_id = user_id
         self._this_wnd.title(f"Hi, {self.username} 👋 !! pls  Choose learning program")
 
 
@@ -23,25 +23,21 @@ class SecondPageGUI:
         self._math_pdfs_window = None
         self._phys_pdfs_window = None
         self._eng_pdfs_window = None
-        self._math_videos_window = None
+        self._Listnotes_window = None
         self._favorites_window = None
         self._AI_chat_window = None
 
-        # чтобы под-опции не наслаивались
         self._sub_buttons = []
         self._current_submenu = None
         self.submenu_visible = False
 
         self.create_ui()
 
-    # ================= UI =================
     def create_ui(self):
-        # ====== Window ======
         self._this_wnd.state("zoomed")
         self._this_wnd.resizable(True, True)
         self._this_wnd.configure(bg="#0b0b0f")
 
-        # ====== Cyberpunk palette ======
         self.BG = "#0b0b0f"
         self.PANEL = "#11111a"
         self.TEXT = "#e6e6eb"
@@ -55,7 +51,6 @@ class SecondPageGUI:
         self.BTN_TEXT = "#ffffff"
         self.BTN_BORDER = "#ffffff"
 
-        # ====== Canvas ======
         self._canvas = tk.Canvas(
             self._this_wnd,
             bg=self.BG,
@@ -64,10 +59,9 @@ class SecondPageGUI:
         )
         self._canvas.pack(fill="both", expand=True)
 
-        # ====== Main buttons ======
         self._btn_CHATAI = self._make_button("AI chat", command=self.open_chat_AI_page)
         self._btn_bagrut = self._make_button("BAGRUT PREP", lambda: self.toggle_submenu("bagrut"))
-        #self._btn_school = self._make_button("SCHOOL HELP", lambda: self.on_choose("school"))
+        self._btn_notes = self._make_button("NOTES", command = self.open_Notes)
         self._btn_favorites = self._make_button("FAVORITES", command=self.favorites)
 
         self._canvas.bind("<Configure>", self._redraw_layout)
@@ -88,7 +82,6 @@ class SecondPageGUI:
 
         self._draw_grid()
 
-        # ====== Main panel ======
         panel_w = 960
         panel_h = 450
 
@@ -97,32 +90,28 @@ class SecondPageGUI:
         self.panel_x2 = self.panel_x1 + panel_w
         self.panel_y2 = self.panel_y1 + panel_h
 
-        # shadow
         self._canvas.create_rectangle(
             self.panel_x1 + 6, self.panel_y1 + 6,
             self.panel_x2 + 6, self.panel_y2 + 6,
             fill="#07070b", outline=""
         )
 
-        # panel
         self._canvas.create_rectangle(
             self.panel_x1, self.panel_y1,
             self.panel_x2, self.panel_y2,
             fill=self.PANEL, outline=self.BORDER, width=2
         )
 
-        # neon top line
         self._canvas.create_line(
             self.panel_x1, self.panel_y1,
             self.panel_x2, self.panel_y1,
             fill=self.CYAN, width=3
         )
 
-        # ====== Title ======
         self._canvas.create_text(
             (self.panel_x1 + self.panel_x2) // 2,
             self.panel_y1 + 40,
-            text="ONLINE LIBRARY",
+            text="ONLINE LIBRARY VIRLIB",
             font=("Calibri", 26, "bold"),
             fill=self.TEXT
         )
@@ -135,7 +124,6 @@ class SecondPageGUI:
             fill=self.MUTED
         )
 
-        # ====== Main buttons ======
         btn_y = self.panel_y1 + 140
         btn_w, btn_h = 240, 52
         gap = 35
@@ -144,7 +132,7 @@ class SecondPageGUI:
         start_x = (self.panel_x1 + self.panel_x2 - total_w) // 2
 
         self._btn_bagrut.place(x=start_x, y=btn_y, width=btn_w, height=btn_h)
-        #self._btn_school.place(x=start_x + btn_w + gap, y=btn_y, width=btn_w, height=btn_h)
+        self._btn_notes.place(x=start_x + btn_w + gap, y=btn_y, width=btn_w, height=btn_h)
         self._btn_CHATAI.place(x=start_x + 2 * (btn_w + gap), y=btn_y, width=btn_w, height=btn_h)
 
         self._btn_favorites.place(
@@ -154,7 +142,6 @@ class SecondPageGUI:
             height=btn_h
         )
 
-        # footer
         self._canvas.create_text(
             (self.panel_x1 + self.panel_x2) // 2,
             self.panel_y2 - 28,
@@ -163,7 +150,6 @@ class SecondPageGUI:
             fill="#7e8593"
         )
 
-        # если были открыты под-кнопки — перерисовать их после resize
         self._rebuild_submenu_if_needed()
 
     def _make_button(self, text, command):
@@ -202,14 +188,8 @@ class SecondPageGUI:
         self._sub_buttons.clear()
 
 
-
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-
-
     def _rebuild_submenu_if_needed(self):
-        #if self._current_submenu == "school":
-            #self.show_school_options()
+
         if self._current_submenu == "bagrut":
             self.show_bagrut_options()
         elif self._current_submenu == "bagrutmath":
@@ -219,10 +199,8 @@ class SecondPageGUI:
         elif self._current_submenu == "bagruteng":
             self.show_bagrut_eng_options()
 
-    # ================= Logic =================
+
     def on_choose(self, program_type: str):
-        #if program_type == "school":
-            #self.show_school_options()
         if program_type == "bagrut":
             self.show_bagrut_options()
 
@@ -252,28 +230,12 @@ class SecondPageGUI:
 
 
 
-
-    # ================= Submenus =================
-
-    # def show_school_options(self):
-    #     self._current_submenu = "school"
-    #     self._clear_sub_buttons()
-    #
-    #     base_x = (self.panel_x1 + self.panel_x2) // 2 - 90
-    #     base_y = self.panel_y1 + 200
-    #
-    #     self._make_sub_button("MATH", base_x, base_y)
-    #     self._make_sub_button("HEBREW", base_x, base_y + 55)
-    #     self._make_sub_button("ENGLISH", base_x, base_y + 110)
-
-
-
     def show_bagrut_options(self):
         self._current_submenu = "bagrut"
         self._clear_sub_buttons()
 
 
-        base_x = self.panel_x1 + 140  # слева (под bagrut)
+        base_x = self.panel_x1 + 140
         base_y = self.panel_y1 + 200
 
         self._make_sub_button("MATH", base_x, base_y, command=lambda: self.on_choose_bagrut("bagrutmath"))
@@ -290,8 +252,8 @@ class SecondPageGUI:
         base_y = self.panel_y1 + 200
 
         self._make_sub_button("BAGRUTS", base_x, base_y, command=self.mathbagrutpdfs)
-        self._make_sub_button("VIDEOS", base_x, base_y + 55, command = self.mathbagrutvideos)
-        self._make_sub_button("OTHERS", base_x, base_y + 110)
+
+
 
 
 
@@ -303,7 +265,7 @@ class SecondPageGUI:
         base_y = self.panel_y1 + 200
 
         self._make_sub_button("BAGRUTS", base_x, base_y, command=self.physbagrutpdfs)
-        self._make_sub_button("VIDEOS", base_x, base_y + 55, command=self.mathbagrutvideos)
+
 
 
     def show_bagrut_eng_options(self):
@@ -314,7 +276,17 @@ class SecondPageGUI:
         base_y = self.panel_y1 + 200
 
         self._make_sub_button("BAGRUTS", base_x, base_y, command=self.engbagrutpdfs)
-        self._make_sub_button("VIDEOS", base_x, base_y + 55, command=self.mathbagrutvideos)
+
+
+
+    def open_Notes(self):
+        if self._Listnotes_window is not None:
+            try:
+                self._Listnotes_window._this_wnd.lift()
+                return
+            except:
+                self._Listnotes_window = None
+        self._Listnotes_window = ListNotes(self._this_wnd, self.user_id)
 
 
 
@@ -327,7 +299,7 @@ class SecondPageGUI:
             except:
                 self._math_pdfs_window = None
 
-        self._math_pdfs_window = Mathpdfs(self._this_wnd, self.id_of_user)
+        self._math_pdfs_window = Mathpdfs(self._this_wnd, self.user_id)
 
 
     def physbagrutpdfs(self):
@@ -338,7 +310,7 @@ class SecondPageGUI:
             except:
                 self._phys_pdfs_window = None
 
-        self._phys_pdfs_window = Physpdfs(self._this_wnd, self.id_of_user)
+        self._phys_pdfs_window = Physpdfs(self._this_wnd, self.user_id)
 
     def engbagrutpdfs(self):
         if self._eng_pdfs_window is not None:
@@ -348,20 +320,7 @@ class SecondPageGUI:
             except:
                 self._eng_pdfs_window = None
 
-        self._eng_pdfs_window = Engpdfs(self._this_wnd, self.id_of_user)
-
-
-
-
-    def mathbagrutvideos(self):
-        if self._math_videos_window is not None:
-            try:
-                self._math_videos_window._this_wnd.lift()
-                return
-            except:
-                self._math_videos_window = None
-
-        self._math_videos_window = MathVideos(self._this_wnd, self.id_of_user) #self.id_of_user
+        self._eng_pdfs_window = Engpdfs(self._this_wnd, self.user_id)
 
 
 
@@ -373,7 +332,7 @@ class SecondPageGUI:
             except:
                 self._favorites_window = None
 
-        self._favorites_window = Basket(self._this_wnd, self.id_of_user)
+        self._favorites_window = Basket(self._this_wnd, self.user_id)
 
 
 
@@ -386,15 +345,7 @@ class SecondPageGUI:
                 self._AI_chat_window = None
 
         self._AI_chat_window = AIChatPage(self._this_wnd)
-        #self._AI_chat_window.create_ui()
 
-
-
-
-
-        # НЕ запускай второй mainloop для Toplevel
-
-    # ================= Grid =================
     def _draw_grid(self, event=None):
         if self._canvas is None:
             return
@@ -411,12 +362,10 @@ class SecondPageGUI:
 
         self._canvas.tag_lower("grid")
 
-    # ================= Window helpers =================
     def show_modal(self):
         self._this_wnd.grab_set()
 
     def run(self):
-        # запускать mainloop только если это корневое окно
         if self._parent_wnd is None:
             self._this_wnd.mainloop()
 

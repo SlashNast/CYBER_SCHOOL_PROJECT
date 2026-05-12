@@ -1,4 +1,5 @@
 #BagrutEngPdf.py
+
 import tkinter as tk
 import os
 import webbrowser
@@ -79,12 +80,10 @@ class Engpdfs:
 
 
     def create_ui(self):
-        # ====== Window ======
         self._this_wnd.state("zoomed")
         self._this_wnd.resizable(True, True)
         self._this_wnd.configure(bg="#0b0b0f")
 
-        # ====== Cyberpunk palette ======
         self.BG = "#0b0b0f"
         self.PANEL = "#11111a"
         self.TEXT = "#e6e6eb"
@@ -98,7 +97,6 @@ class Engpdfs:
         self.BTN_TEXT = "#ffffff"
         self.BTN_BORDER = "#ffffff"
 
-        # ====== Canvas ======
         self._canvas = tk.Canvas(
             self._this_wnd,
             bg=self.BG,
@@ -107,7 +105,6 @@ class Engpdfs:
         )
         self._canvas.pack(fill="both", expand=True)
 
-        # ====== Scroll area ======
         self.scroll_canvas = tk.Canvas(
             self._canvas,
             bg=self.PANEL,
@@ -176,11 +173,9 @@ class Engpdfs:
 
 
     def render_pdfs(self):
-        # очищаем экран
         for widget in self.list_frame.winfo_children():
             widget.destroy()
 
-        # рисуем текущий список
         for row, (material_id, title, filename) in enumerate(self.filtered_pdfs):
             big_btn = self._make_list_button(
                 title,
@@ -210,7 +205,6 @@ class Engpdfs:
 
         self._draw_grid()
 
-        # ====== Main panel ======
         panel_w = 960
         panel_h = 450
 
@@ -219,28 +213,24 @@ class Engpdfs:
         self.panel_x2 = self.panel_x1 + panel_w
         self.panel_y2 = self.panel_y1 + panel_h
 
-        # shadow
         self._canvas.create_rectangle(
             self.panel_x1 + 6, self.panel_y1 + 6,
             self.panel_x2 + 6, self.panel_y2 + 6,
             fill="#07070b", outline=""
         )
 
-        # panel
         self._canvas.create_rectangle(
             self.panel_x1, self.panel_y1,
             self.panel_x2, self.panel_y2,
             fill=self.PANEL, outline=self.BORDER, width=2
         )
 
-        # neon line
         self._canvas.create_line(
             self.panel_x1, self.panel_y1,
             self.panel_x2, self.panel_y1,
             fill=self.CYAN, width=3
         )
 
-        # title
         self._canvas.create_text(
             (self.panel_x1 + self.panel_x2) // 2,
             self.panel_y1 + 40,
@@ -257,7 +247,6 @@ class Engpdfs:
             fill=self.MUTED
         )
 
-        # list area
         list_x1 = self.panel_x1 + 40
         list_y1 = self.panel_y1 + 110
         list_x2 = self.panel_x2 - 40
@@ -279,11 +268,10 @@ class Engpdfs:
             height=list_h
         )
 
-        # footer
         self._canvas.create_text(
             (self.panel_x1 + self.panel_x2) // 2,
             self.panel_y2 - 28,
-            text="tip: pick a program → then pick a subject",
+            text="tip: pick a test → check your answers",
             font=("Calibri", 11),
             fill="#7e8593"
         )
@@ -291,13 +279,13 @@ class Engpdfs:
         self._btn_back.place(x=20, y=20, width=100, height=40)
 
         self.filterbtn.place(
-            x=(self.panel_x1 + self.panel_x2) // 2 - 450,
+            x=(self.panel_x1 + self.panel_x2) // 2 - 460,
             y=self.panel_y1 + 20
         )
 
         self.clear_filterbtn.place(
-            x=(self.panel_x1 + self.panel_x2) // 2 - 250,
-            y=self.panel_y1 + 20, width=25
+            x=(self.panel_x1 + self.panel_x2) // 2 - 280,
+            y=self.panel_y1 + 20, width=35
         )
 
         self._this_wnd.update_idletasks()
@@ -502,18 +490,14 @@ class Engpdfs:
 
 
     def _on_list_frame_configure(self, event):
-            # пересчитываем область прокрутки под размер содержимого
             self.scroll_canvas.configure(scrollregion=self.scroll_canvas.bbox("all"))
 
     def _on_scroll_canvas_configure(self, event):
-            # чтобы внутренний frame растягивался по ширине scroll_canvas
             self.scroll_canvas.itemconfig(self.list_window_id, width=event.width)
 
     def _on_mousewheel(self, event):
-            # Windows: event.delta обычно кратен 120
             self.scroll_canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
 
-        # ================= Grid =================
 
     def _draw_grid(self, event=None):
         if self._canvas is None:
@@ -531,13 +515,11 @@ class Engpdfs:
 
         self._canvas.tag_lower("grid")
 
-        # ================= Window helpers =================
 
     def show_modal(self):
         self._this_wnd.grab_set()
 
     def run(self):
-        # запускать mainloop только если это корневое окно
         if self._parent_wnd is None:
             self._this_wnd.mainloop()
 

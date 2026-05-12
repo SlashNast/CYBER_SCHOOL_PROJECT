@@ -1,4 +1,5 @@
 # aichat_page.py
+
 import tkinter as tk
 from tkinter import scrolledtext
 from ai_client_openAI import ask_ai, SYSTEM_PROMPT
@@ -10,19 +11,6 @@ class AIChatPage:
         self._parent_wnd = parent_wnd
         self._this_wnd = tk.Toplevel(parent_wnd) if parent_wnd else tk.Tk()
         self._this_wnd.title("AI Chat")
-
-
-        self.BG = "#0b0b0f"
-        self.PANEL = "#11111a"
-        self.TEXT = "#e6e6eb"
-        self.MUTED = "#9aa0aa"
-        self.CYAN = "#22d3ee"
-        self.BORDER = "#1f2233"
-
-        self.BTN_BG = "#2a2f3a"
-        self.BTN_HOVER = "#343a46"
-        self.BTN_TEXT = "#ffffff"
-        self.BTN_BORDER = "#ffffff"
 
         self._canvas = None
         self._chat_box = None
@@ -37,16 +25,26 @@ class AIChatPage:
         self._this_wnd.destroy()
 
     def create_ui(self):
-        # ====== window ======
+
+        self.BG = "#0b0b0f"
+        self.PANEL = "#11111a"
+        self.TEXT = "#e6e6eb"
+        self.MUTED = "#9aa0aa"
+        self.CYAN = "#22d3ee"
+        self.BORDER = "#1f2233"
+
+        self.BTN_BG = "#2a2f3a"
+        self.BTN_HOVER = "#343a46"
+        self.BTN_TEXT = "#ffffff"
+        self.BTN_BORDER = "#ffffff"
+
         self._this_wnd.state("zoomed")
         self._this_wnd.resizable(True, True)
         self._this_wnd.configure(bg=self.BG)
 
-        # ====== canvas ======
         self._canvas = tk.Canvas(self._this_wnd, bg=self.BG, highlightthickness=0, bd=0)
         self._canvas.pack(fill="both", expand=True)
 
-        # ====== widgets ======
         self._chat_box = scrolledtext.ScrolledText(
             self._this_wnd,
             wrap="word",
@@ -117,8 +115,9 @@ class AIChatPage:
         self._canvas.bind("<Configure>", self._redraw_layout)
         self._this_wnd.after(50, self._redraw_layout)
 
-        # greeting
         self._append("AI", "Hi! Write your question below and press SEND 🙂")
+
+
 
     def _redraw_layout(self, event=None):
         if self._canvas is None:
@@ -134,7 +133,6 @@ class AIChatPage:
 
         self._draw_grid()
 
-        # ====== main panel ======
         panel_w = 1080
         panel_h = 670
 
@@ -143,22 +141,18 @@ class AIChatPage:
         panel_x2 = panel_x1 + panel_w
         panel_y2 = panel_y1 + panel_h
 
-        # shadow
         self._canvas.create_rectangle(
             panel_x1 + 6, panel_y1 + 6, panel_x2 + 6, panel_y2 + 6,
             fill="#07070b", outline=""
         )
 
-        # panel
         self._canvas.create_rectangle(
             panel_x1, panel_y1, panel_x2, panel_y2,
             fill=self.PANEL, outline=self.BORDER, width=2
         )
 
-        # neon top line
         self._canvas.create_line(panel_x1, panel_y1, panel_x2, panel_y1, fill=self.CYAN, width=3)
 
-        # title
         self._canvas.create_text(
             (panel_x1 + panel_x2) // 2, panel_y1 + 40,
             text="AI CHAT",
@@ -172,7 +166,6 @@ class AIChatPage:
             fill=self.MUTED
         )
 
-        # ====== chat area ======
         chat_x = panel_x1 + 60
         chat_y = panel_y1 + 110
         chat_w = (panel_x2 - panel_x1) - 120
@@ -180,16 +173,14 @@ class AIChatPage:
 
         self._chat_box.place(x=chat_x, y=chat_y, width=chat_w, height=chat_h)
 
-        # ====== input row ======
         input_y = chat_y + chat_h + 22
         entry_w = chat_w - 170
 
         self._entry.place(x=chat_x, y=input_y, width=entry_w, height=46)
         self._btn_send.place(x=chat_x + entry_w + 18, y=input_y, width=152, height=46)
 
-        self._btn_back.place(x=20, y=20, width=100, height=40)
+        self._btn_back.place(x=120, y=50, width=100, height=40)
 
-        # ====== footer ======
         self._canvas.create_text(
             (panel_x1 + panel_x2) // 2, panel_y2 - 26,
             text="tip: press Enter to send • keep questions short and specific",
@@ -213,7 +204,6 @@ class AIChatPage:
             return
         self._entry.delete(0, "end")
 
-        # user message
         self._append("YOU", text)
 
         self._history.append({"role": "user", "content": text})
@@ -246,7 +236,7 @@ class AIChatPage:
             self._canvas.create_line(x, 0, x, h, fill="#2D3458", tags="grid")
 
         for y in range(0, h, step):
-            self._canvas.create_line(0, y, w, y, fill="#2D3458", tags="grid")
+                self._canvas.create_line(0, y, w, y, fill="#2D3458", tags="grid")
 
         self._canvas.tag_lower("grid")
 

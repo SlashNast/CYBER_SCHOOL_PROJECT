@@ -22,11 +22,9 @@ class CClientBL:
     def connect(self) -> socket:
         try:
             self._client_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+            self._client_socket.settimeout(5)
             self._client_socket.connect((self._host,self._port))
-            # 1. получить публичный ключ сервера
-            # 2. сгенерировать AES-ключ
-            # 3. зашифровать AES-ключ публичным ключом сервера
-            # 4. отправить серверу зашифрованный AES-ключ
+
             write_to_log("[CLIENT_BL] connected to server")
 
             public_pem = self._client_socket.recv(4096)

@@ -11,9 +11,9 @@ class CServerBL:
 
     def __init__(self,host,port):
 
-        # Open the log file in write mode, which truncates the file to zero length
+
         with open(LOG_FILE,'w'):
-            pass  # This block is empty intentionally
+            pass
 
         self._host = host
         self._port = port
@@ -40,7 +40,6 @@ class CServerBL:
                 self._server_socket = None
 
             if len(self._client_handlers) > 0:
-                # Waiting to close all opened threads
                 for client_thread in self._client_handlers:
                     client_thread.join()
                 write_to_log(f"[SERVER_BL] All Client threads are closed")
@@ -56,11 +55,9 @@ class CServerBL:
             write_to_log(f"[SERVER_BL] listening...")
 
             while self._is_srv_running and self._server_socket is not None:
-                # Accept socket request for connection
                 client_socket,address = self._server_socket.accept()
                 write_to_log(f"[SERVER_BL] Client connected {client_socket}{address} ")
 
-                # Start Thread
                 cl_handler = CClientHandler(client_socket,address, self)
                 cl_handler.start()
                 self._client_handlers.append(cl_handler)
@@ -123,7 +120,6 @@ class CClientHandler(threading.Thread):
                 cmd, args = get_cmd_and_args(buf)
                 write_to_log(f"[SERVER_BL] received decrypted from {self._address} - cmd: {cmd}, args: {args}")
 
-                # 3. создаём ответ
                 if check_cmd(cmd) == 1:
                     response = create_response_msg(cmd, args)
 
@@ -134,12 +130,10 @@ class CClientHandler(threading.Thread):
                     response = '{"success": false, "msg": "unknown command"}'
                     response = f"{len(response):04d}{response}"
 
-                # 4. шифруем ответ через AES
                 write_to_log("[SERVER_BL] send - " + response)
                 encrypted_response = aes_encrypt(self._aes_key, response.encode(FORMAT))
                 self._client_socket.send(encrypted_response)
 
-                # 5. отключение
                 if cmd == DISCONNECT_MSG:
                     connected = False
 

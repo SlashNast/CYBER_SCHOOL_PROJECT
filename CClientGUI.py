@@ -12,7 +12,7 @@ from tkinter import messagebox
 BTN_IMAGE = "./Images/GUI - button.png"
 BG_IMAGE = "./Images/GUI - BG.png"
 FONT = "Calibri"
-FONT_BUTTON = (FONT,16)
+FONT_BUTTON = (FONT,14, "bold")
 
 
 class CClientGUI(CClientBL):
@@ -23,8 +23,6 @@ class CClientGUI(CClientBL):
 
         self._root = tk.Tk()
         self._canvas = None
-        self._img_bg = None
-        self._img_btn = None
 
         self._entry_IP = None
         self._entry_Port = None
@@ -47,7 +45,6 @@ class CClientGUI(CClientBL):
             self._root.resizable(True, True)
             self._root.configure(bg="#0b0b0f")
 
-            # ====== Palette ======
             self.BG = "#0b0b0f"
             self.PANEL = "#11111a"
             self.TEXT = "#e6e6eb"
@@ -56,7 +53,11 @@ class CClientGUI(CClientBL):
             self.PURPLE = "#a855f7"
             self.BORDER = "#1f2233"
 
-            # ====== Canvas ======
+            self.BTN_BG = "#2a2f3a"
+            self.BTN_HOVER = "#343a46"
+            self.BTN_TEXT = "#ffffff"
+            self.BTN_BORDER = "#ffffff"
+
             self._canvas = tk.Canvas(
                 self._root,
                 bg=self.BG,
@@ -65,57 +66,79 @@ class CClientGUI(CClientBL):
             )
             self._canvas.pack(fill="both", expand=True)
 
-            # button image
-            self._img_btn = PhotoImage(file=BTN_IMAGE)
 
-            # ====== Buttons ======
             self._btn_connect = tk.Button(
                 self._canvas,
-                text="Connect",
+                text="CONNECT",
                 font=FONT_BUTTON,
-                fg="#c0c0c0",
+                fg=self.BTN_TEXT,
+                bg=self.BTN_BG,
+                activeforeground=self.BTN_TEXT,
+                activebackground=self.BTN_HOVER,
                 compound="center",
-                image=self._img_btn,
-                bd=0,
+                relief="solid",
+                highlightthickness=1,
+                highlightbackground=self.BTN_BORDER,
+                highlightcolor=self.BTN_BORDER,
+                bd=1,
                 command=self.on_click_connect
             )
 
             self._btn_disconnect = tk.Button(
                 self._canvas,
-                text="Disconnect",
+                text="DISCONNECT",
                 font=FONT_BUTTON,
-                fg="#c0c0c0",
+                fg=self.BTN_TEXT,
+                bg=self.BTN_BG,
+                activeforeground=self.BTN_TEXT,
+                activebackground=self.BTN_HOVER,
                 compound="center",
-                image=self._img_btn,
-                bd=0,
+                relief="solid",
+                highlightthickness=1,
+                highlightbackground=self.BTN_BORDER,
+                highlightcolor=self.BTN_BORDER,
+                bd=1,
                 command=self.on_click_disconnect,
                 state="disabled"
             )
 
             self._btn_send = tk.Button(
                 self._canvas,
-                text="Send Request",
+                text="SEND REQUEST",
                 font=FONT_BUTTON,
-                fg="#c0c0c0",
+                fg=self.BTN_TEXT,
+                bg=self.BTN_BG,
+                activeforeground=self.BTN_TEXT,
+                activebackground=self.BTN_HOVER,
                 compound="center",
-                image=self._img_btn,
-                bd=0,
+                relief="solid",
+                highlightthickness=1,
+                highlightbackground=self.BTN_BORDER,
+                highlightcolor=self.BTN_BORDER,
+                bd=1,
                 command=self.on_click_send,
                 state="disabled"
             )
 
             self._btn_login = tk.Button(
                 self._canvas,
-                text="Login",
+                text="LOGIN",
                 font=FONT_BUTTON,
-                fg="#c0c0c0",
+                fg=self.BTN_TEXT,
+                bg=self.BTN_BG,
+                activeforeground=self.BTN_TEXT,
+                activebackground=self.BTN_HOVER,
                 compound="center",
-                image=self._img_btn,
-                bd=0,
+                relief="solid",
+                highlightthickness=1,
+                highlightbackground=self.BTN_BORDER,
+                highlightcolor=self.BTN_BORDER,
+                bd=1,
                 command=self.on_click_login
             )
 
-            # ====== Entries ======
+
+
             self._entry_IP = tk.Entry(self._canvas, font=('Calibri', 16), fg='#808080')
             self._entry_IP.insert(0, '127.0.0.1')
 
@@ -145,7 +168,6 @@ class CClientGUI(CClientBL):
 
         self._draw_grid()
 
-        # ====== Main panel ======
         panel_w = 1200
         panel_h = 520
 
@@ -154,26 +176,24 @@ class CClientGUI(CClientBL):
         panel_x2 = panel_x1 + panel_w
         panel_y2 = panel_y1 + panel_h
 
-        # shadow
         self._canvas.create_rectangle(
             panel_x1 + 6, panel_y1 + 6,
             panel_x2 + 6, panel_y2 + 6,
             fill="#07070b", outline=""
         )
 
-        # panel
         self._canvas.create_rectangle(
             panel_x1, panel_y1, panel_x2, panel_y2,
             fill=self.PANEL, outline=self.BORDER, width=2
         )
 
-        # top neon line
+
         self._canvas.create_line(
             panel_x1, panel_y1, panel_x2, panel_y1,
             fill=self.CYAN, width=3
         )
 
-        # title
+
         self._canvas.create_text(
             (panel_x1 + panel_x2) // 2,
             panel_y1 + 40,
@@ -214,10 +234,8 @@ class CClientGUI(CClientBL):
             anchor="w"
         )
 
-        # entry sizes
         entry_h = 32
 
-        # entries
         self._entry_IP.place(
             x=panel_x1 + 180,
             y=panel_y1 + 95,
@@ -256,22 +274,30 @@ class CClientGUI(CClientBL):
         # buttons
         self._btn_connect.place(
             x=panel_x2 - 290,
-            y=panel_y1 + 85
+            y=panel_y1 + 85,
+            width=160,
+            height=42
         )
 
         self._btn_disconnect.place(
             x=panel_x2 - 290,
-            y=panel_y1 + 165
+            y=panel_y1 + 165,
+            width=160,
+            height=42
         )
 
         self._btn_send.place(
             x=panel_x2 - 290,
-            y=panel_y1 + 245
+            y=panel_y1 + 245,
+            width=160,
+            height=42
         )
 
         self._btn_login.place(
             x=panel_x2 - 290,
-            y=panel_y1 + 325
+            y=panel_y1 + 325,
+            width=160,
+            height=42
         )
 
 
@@ -314,7 +340,6 @@ class CClientGUI(CClientBL):
         args = self._entry_Args.get()
         if cmd:
             self.send_data(cmd, args)
-            # Use "after" to update the GUI after a short delay
             self._root.after(100,self.update_received_entry)
 
     loc_wnd = None
@@ -389,9 +414,7 @@ class CClientGUI(CClientBL):
 
     def update_received_entry(self):
         return
-        #message = self.receive_data()
-        # self._text_Received.delete(0, tk.END)
-        #self._text_Received.insert(tk.END, message + "\n")
+
 
 
 

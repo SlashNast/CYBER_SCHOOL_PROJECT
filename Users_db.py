@@ -10,7 +10,7 @@ DB_PATH = os.path.join(os.path.dirname(__file__), "Users.db")
 ph = PasswordHasher()
 
 MATERIALS_DATA = [
-    (1, "35571, H26", "pdf", r"C:\Users\Ulian\PycharmProjects\ciber2025\firstprojectcyber\pdfsBAGRUTMATH\שאלון-35571,  horef2026 .pdf"),
+    (1, "35571, H26", "pdf", r"C:\Users\Ulian\PycharmProjects\ciber2025\firstprojectcyber\pdfsBAGRUTMATH\horef2026 , שאלון-35571.pdf"),
     (2, "35571, H26, answers", "pdf", r"C:\Users\Ulian\PycharmProjects\ciber2025\firstprojectcyber\pdfsBAGRUTMATH\horef2026, פתרון,35571.pdf"),
     (3, "35572, H26", "pdf", r"C:\Users\Ulian\PycharmProjects\ciber2025\firstprojectcyber\pdfsBAGRUTMATH\שאלון-35572, horef2026.pdf"),
     (4, "35572, H26, answers", "pdf", r"C:\Users\Ulian\PycharmProjects\ciber2025\firstprojectcyber\pdfsBAGRUTMATH\horef2026, פתרון,35572.pdf"),
@@ -50,15 +50,6 @@ MATERIALS_DATA = [
     (35, "16582, S25, answers", "pdf", r"C:\Users\Ulian\PycharmProjects\ciber2025\firstprojectcyber\pdfsBAGRUTENG\summer2025, פתרון-16581G.pdf"),
     (36, "16471, S25", "pdf", r"C:\Users\Ulian\PycharmProjects\ciber2025\firstprojectcyber\pdfsBAGRUTENG\summer2025, 16471-שאלוןE.pdf"),
     (37, "16471, S25, answers", "pdf", r"C:\Users\Ulian\PycharmProjects\ciber2025\firstprojectcyber\pdfsBAGRUTENG\summer2025, פתרון-16471E.pdf"),
-
-    (38, "1 task video", "link", "https://youtu.be/0XczPenRWOk"),
-    (39, "2 task video", "link","https://youtu.be/qca6bfIqrFk"),
-    (40, "3 task video", "link", "https://youtu.be/jdb4Btc9lDw"),
-    (41, "4 task video", "link", "https://youtu.be/pS_6_b_o-I4"),
-    (42, "5 task video", "link", "https://youtu.be/xwVU5mzXNSE"),
-    (43, "6 task video", "link",  "https://youtu.be/hIYzABmh6IU"),
-    (44, "7 task video", "link", "https://youtu.be/OjfGz1ydfPQ"),
-    (45, "8 task video", "link", "https://youtu.be/-k3BcZaUMm0"),
 
 ]
 
@@ -146,6 +137,10 @@ def seed_materials() -> None:
         con.executemany("""
             INSERT OR IGNORE INTO Materials (id, title, type, path_or_link)
             VALUES (?, ?, ?, ?)
+            ON CONFLICT(id) DO UPDATE SET
+            title = excluded.title,
+            type = excluded.type,
+            path_or_link = excluded.path_or_link
         """, MATERIALS_DATA)
         con.commit()
 
@@ -226,6 +221,8 @@ def get_user_favorite_materials(user_id: int):
 
 
 
+
+
 def get_material_id_by_title(title: str) -> int | None:
     ensure_db_materials()
 
@@ -238,6 +235,87 @@ def get_material_id_by_title(title: str) -> int | None:
     if row:
         return row[0]
     return None
+
+
+
+#---------- NOTES
+
+
+def ensure_db_notes():
+    with closing(sqlite3.connect(DB_PATH)) as con:
+        con.execute("""
+               CREATE TABLE IF NOT EXISTS Notes (
+                   id INTEGER PRIMARY KEY AUTOINCREMENT,
+                   user_id INTEGER NOT NULL,
+                   title TEXT NOT NULL,  
+                   content TEXT DEFAULT '',
+                   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                   FOREIGN KEY (user_id) REFERENCES Users(id)
+               )
+           """)
+        con.commit()
+
+
+def get_user_notes(user_id: int):
+    with closing(sqlite3.connect(DB_PATH)) as con:
+        cur = con.execute("""
+            SELECT id, title, created_at
+            FROM Notes
+            WHERE user_id = ?
+            ORDER BY updated_at DESC
+        """, (user_id,))
+        return cur.fetchall()
+
+
+def get_note_by_id(note_id: int, user_id: int):
+    ensure_db_notes()
+
+    with closing(sqlite3.connect(DB_PATH)) as con:
+        row = con.execute("""
+            SELECT id, title, content, created_at, updated_at
+            FROM Notes
+            WHERE id = ? AND user_id = ?
+        """, (note_id, user_id)).fetchone()
+
+    return row
+
+
+
+def add_note(user_id: int, title: str, content: str = ""):
+    ensure_db_notes()
+
+    with closing(sqlite3.connect(DB_PATH)) as con:
+        cur = con.execute("""
+            INSERT INTO Notes (user_id, title, content)
+            VALUES (?, ?, ?)
+        """, (user_id, title, content))
+        con.commit()
+        return cur.lastrowid
+
+
+
+def update_note(note_id: int, user_id: int, title: str, content: str):
+    with closing(sqlite3.connect(DB_PATH)) as con:
+        con.execute("""
+            UPDATE Notes
+            SET title = ?, content = ?, updated_at = CURRENT_TIMESTAMP
+            WHERE id = ? AND user_id = ?
+        """, (title, content, note_id, user_id))
+        con.commit()
+
+
+def delete_note(note_id: int, user_id: int):
+    with closing(sqlite3.connect(DB_PATH)) as con:
+        cur = con.execute("""
+            DELETE FROM Notes
+            WHERE id = ? AND user_id = ?
+        """, (note_id, user_id))
+        con.commit()
+        return cur.rowcount > 0
+
+
+
 
 
 

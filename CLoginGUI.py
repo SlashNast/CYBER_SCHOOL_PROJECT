@@ -15,14 +15,12 @@ FONT_BUTTON = (FONT, 14)
 class CLoginGUI:
 
     def __init__(self, parent_wnd, callback_register, callback_signin):
-        # set windows hierarchy
+
         self._parent_wnd = parent_wnd
         self._this_wnd = tk.Toplevel(parent_wnd) if parent_wnd else tk.Tk()
         self._this_wnd.title("Login")
 
         self._canvas = None
-        self._img_bg = None
-        self._img_btn = None
 
         self._entry_login = None
         self._entry_pw = None
@@ -30,10 +28,10 @@ class CLoginGUI:
         self._btn_register = None
         self._btn_signin = None
 
-        # data for the registration
         self._login = ''
         self._pw = ''
         self._id = 0
+
         self.callback_register = callback_register
         self.callback_signin = callback_signin
 
@@ -53,7 +51,6 @@ class CLoginGUI:
         self._this_wnd.resizable(True, True)
         self._this_wnd.configure(bg="#0b0b0f")
 
-        # ====== Palette ======
         self.BG = "#0b0b0f"
         self.PANEL = "#11111a"
         self.TEXT = "#e6e6eb"
@@ -67,7 +64,6 @@ class CLoginGUI:
         self.BTN_TEXT = "#ffffff"
         self.BTN_BORDER = "#ffffff"
 
-        # ====== Canvas ======
         self._canvas = tk.Canvas(
             self._this_wnd,
             bg=self.BG,
@@ -76,7 +72,6 @@ class CLoginGUI:
         )
         self._canvas.pack(fill="both", expand=True)
 
-        # ====== Entries ======
         self._entry_login = tk.Entry(
             self._canvas,
             font=("Calibri", 16),
@@ -98,7 +93,6 @@ class CLoginGUI:
             show="*"
         )
 
-        # ====== Buttons ======
         self._btn_register = tk.Button(
             self._canvas,
             text="REGISTER",
@@ -154,29 +148,25 @@ class CLoginGUI:
         panel_x2 = panel_x1 + panel_w
         panel_y2 = panel_y1 + panel_h
 
-        # shadow
         self._canvas.create_rectangle(
             panel_x1 + 6, panel_y1 + 6,
             panel_x2 + 6, panel_y2 + 6,
             fill="#07070b", outline=""
         )
 
-        # panel
         self._canvas.create_rectangle(
             panel_x1, panel_y1, panel_x2, panel_y2,
             fill=self.PANEL, outline=self.BORDER, width=2
         )
 
-        # top line
         self._canvas.create_line(
             panel_x1, panel_y1, panel_x2, panel_y1,
             fill=self.CYAN, width=3
         )
 
-        # title
         self._canvas.create_text(
             (panel_x1 + panel_x2) // 2, panel_y1 + 35,
-            text="ONLINE LIBRARY",
+            text="ONLINE LIBRARY VIRLIB",
             font=("Calibri", 26, "bold"),
             fill=self.TEXT
         )
@@ -187,7 +177,6 @@ class CLoginGUI:
             fill=self.MUTED
         )
 
-        # labels
         self._canvas.create_text(
             panel_x1 + 55, panel_y1 + 120,
             text="LOGIN",
@@ -207,7 +196,6 @@ class CLoginGUI:
         entry_w = 360
         entry_h = 40
 
-        # entry borders
         self._canvas.create_rectangle(
             panel_x1 + 55, panel_y1 + 145,
             panel_x1 + 55 + entry_w, panel_y1 + 145 + entry_h,
@@ -220,7 +208,7 @@ class CLoginGUI:
             outline=self.PURPLE, width=2
         )
 
-        # place entries
+
         self._entry_login.place(
             x=panel_x1 + 65,
             y=panel_y1 + 155,
@@ -235,7 +223,7 @@ class CLoginGUI:
             height=entry_h - 14
         )
 
-        # place buttons
+
         self._btn_signin.place(
             x=panel_x1 + 650,
             y=panel_y2 - 290,
@@ -250,7 +238,6 @@ class CLoginGUI:
             height=42
         )
 
-        # footer
         self._canvas.create_text(
             (panel_x1 + panel_x2) // 2, panel_y2 - 25,
             text="tip: use strong password • keep your account safe",
@@ -318,7 +305,6 @@ if __name__ == "__main__":
             return
 
         try:
-            # ВАЖНО: add_user принимает ТОЛЬКО 1 аргумент — login
             add_user(login, pw)
             messagebox.showinfo("OK", f"User {login} added.")
 
@@ -331,7 +317,7 @@ if __name__ == "__main__":
     def signin_cb(data):
         global main_gui
         print("REGISTER_CB STARTED")
-        # здесь будет логика проверки логина/пароля — сейчас просто заглушка
+
         messagebox.showinfo("Sign in", f"trying enter as:  {data['login']}")
         SecondPageGUI(main_gui._this_wnd, main_gui.get_login(),1)
 

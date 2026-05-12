@@ -22,13 +22,12 @@ COMMAND_SEPARATOR = '>'
 PARAMETER_SEPARATOR = '<'
 
 
-# prepare Log file
+
 LOG_FILE = 'LOG.log'
 logging.basicConfig(filename=LOG_FILE,level=logging.INFO,format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 def check_cmd(data) -> int:
-    """Check if the command is defined in the protocol, protocol_27 or protocol_DB"""
     data = data.upper()
     if data in STANDARD_CMD:
         return 1
@@ -40,7 +39,7 @@ def check_cmd(data) -> int:
 
 
 def create_request_msg(cmd: str,args: str) -> str:
-    """Create a valid protocol message, will be sent by client, with length field"""
+
     if args is None:
         args = []
     request = ''
@@ -50,7 +49,6 @@ def create_request_msg(cmd: str,args: str) -> str:
 
 
     if check_cmd(cmd) == 3:  # commands DB
-        #request = cmd
         request = cmd
         if args:
             request += COMMAND_SEPARATOR + args
@@ -59,7 +57,6 @@ def create_request_msg(cmd: str,args: str) -> str:
 
 
 def create_response_msg(cmd: str,args: list) -> str:
-    """Create a valid protocol message, will be sent by server, with length field"""
     response = "Non-supported cmd"
 
     if cmd == DISCONNECT_MSG:
@@ -70,8 +67,6 @@ def create_response_msg(cmd: str,args: list) -> str:
 
 
 def receive_msg(my_socket: socket) -> (bool,str):
-    """Extract message from protocol, without the length field
-       If length field does not include a number, returns False, "Error" """
     str_header = my_socket.recv(HEADER_LEN).decode(FORMAT)
     length = int(str_header)
     if length > 0:
@@ -83,19 +78,16 @@ def receive_msg(my_socket: socket) -> (bool,str):
 
 
 def get_cmd_and_args(buf: str) -> (str, list):
-    """Returns the command from buffer"""
     split_request = buf.split(COMMAND_SEPARATOR, 1)
     cmd = split_request[0]
     args = []
     if len(split_request) > 1:
         rest = split_request[1]
 
-        # если это REG/SIGNIN — НЕ дробим по PARAMETER_SEPARATOR
         if cmd.upper() in REG_LOGIN_CMD:
             args = [rest]
         else:
             args = rest.split(PARAMETER_SEPARATOR)
-        #args = split_request[1].split(PARAMETER_SEPARATOR)
 
     return cmd, args
 
